@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Socceroos Watch Parties
 
-## Getting Started
+Unofficial site that lists US watch parties for the Socceroos at the 2026 men's
+tournament, and lets fans RSVP. Built to celebrate Australia making the cup.
 
-First, run the development server:
+> **Trademark note:** this site avoids saying "FIFA" / "FIFA World Cup" on-page.
+> We say "the tournament" / "the matches". Keep that posture if you edit copy.
+
+## Stack
+
+- **Framework** — Next.js 16 (App Router, TypeScript, Tailwind 4)
+- **Database** — Turso (libsql) via Drizzle ORM
+- **Email** — Resend (confirmation + 24h-before reminder)
+- **Storage** — Vercel Blob (venue logos)
+- **Geocoding** — Mapbox forward geocoding (admin-side, address → lat/lng)
+- **Cron** — Vercel Cron (`/api/cron/reminders`, hourly)
+- **Hosting** — Vercel
+
+## Brand
+
+- Green — `#00843D` (Pantone 348C)
+- Gold — `#FFCD00` (Pantone 116C)
+- Display font — Archivo Black
+- Body font — Inter
+
+## Local development
 
 ```bash
+# 1. Install deps
+npm install
+
+# 2. Set env vars (see .env.example for every key)
+cp .env.example .env.local
+
+# 3. Push schema to your Turso DB
+npm run db:push
+
+# 4. Seed match fixtures (placeholders — edit src/lib/seed/matches.ts)
+npm run db:seed
+
+# 5. Import US ZIP centroids (one-time, ~3 MB download)
+npm run db:seed-zips
+
+# 6. Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost:3000>. The admin lives at `/admin/login` — sign in with
+`ADMIN_PASSWORD`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## External setup (production)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+You'll create accounts and tokens in four places. Walk through them in order.
 
-## Learn More
+### 1. Turso (database)
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Install + log in (once)
+turso auth login
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Create the prod DB
+turso db create socceroos-watch-parties
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Grab the URL + a token
+turso db show socceroos-watch-parties --url
+turso db tokens create socceroos-watch-parties
+```
 
-## Deploy on Vercel
+Set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` from those.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 2. Resend (email)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Sign up at <https://resend.com>.
+2. Add and verify your sending domain (DNS DKIM + SPF records).
+3. Create an API key under **API Keys**.
+4. Set `RESEND_API_KEY` and `RESEND_FROM="Socceroos Watch Parties <hello@your-domain.com>"`.
+
+### 3. Vercel (hosting + Blob)
+
+```bash
+vercel login
+vercel link
+```
+
+In the Vercel dashboard for the project:
+
+- **Storage → Create → Blob** → name it something like `swp-logos` → connect.
+  This adds `BLOB_READ_WRITE_TOKEN` automatically.
+- **Settings → Environment Variables** → add everything else from
+  `.env.example`. Pull them locally with `vercel env pull .env.local`.
+
+### 4. Mapbox (geocoding)
+
+1. Sign up at <https://account.mapbox.com>.
+2. Create a public token with the **Geocoding** scope.
+3. Set `MAPBOX_TOKEN`.
+
+### Cron
+
+`vercel.json` declares an hourly cron at `/api/cron/reminders`. Set
+`CRON_SECRET` (any random string) and Vercel will sign requests with
+`Authorization: Bearer <secret>`. If unset, the endpoint accepts any caller.
+
+## Editing fixtures
+
+`src/lib/seed/matches.ts` is the source of truth for the Socceroos schedule.
+Each entry has a stable `id` (slug) — never change it once parties reference
+it. After editing, run `npm run db:seed` to upsert.
+
+## Day-to-day admin
+
+- `/admin/parties` — add / edit / hide venues. Logo uploads go to Blob.
+- `/admin/rsvps` — view + export CSV.
+- Geocoding runs server-side on save. If Mapbox can't find an address you can
+  paste lat/lng explicitly in the form.
+
+## Architecture notes
+
+- **Sessions** are server-side opaque tokens in `admin_sessions` (DB), set as
+  an `HttpOnly` cookie. 14-day TTL. `requireAdmin()` guards each protected
+  page; the `/admin/login` page does not call it.
+- **DB client** is a lazy `Proxy` so `next build` doesn't need env vars.
+- **ZIP search** uses Haversine against the public `zip_centroids` table
+  seeded from GeoNames.
+- **Email is best-effort** on RSVP — if Resend is misconfigured the RSVP
+  still succeeds and a log line is written.
+
+## License
+
+MIT. Unofficial fan project. Not affiliated with FFA or any governing body.

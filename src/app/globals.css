@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
+/*
+ * Socceroos Watch Parties — brand tokens.
+ * Pantone 348C ≈ #00843D (green)
+ * Pantone 116C ≈ #FFCD00 (gold)
+ */
+@theme {
+  --color-aus-green: #00843D;
+  --color-aus-green-700: #006B30;
+  --color-aus-green-900: #003F1C;
+  --color-aus-gold: #FFCD00;
+  --color-aus-gold-200: #FFE680;
+  --color-aus-cream: #FFF8DC;
+  --color-aus-ink: #0A0A0A;
+  --color-aus-paper: #FAFAF5;
+
+  --font-display: var(--font-display), "Archivo Black", system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Inter", system-ui, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
+  --background: var(--color-aus-paper);
+  --foreground: var(--color-aus-ink);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Stadium-stripe texture used in the hero. */
+.aus-stripes {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-aus-green) 0,
+    var(--color-aus-green) 36px,
+    var(--color-aus-green-700) 36px,
+    var(--color-aus-green-700) 72px
+  );
+}
+
+.gold-underline {
+  background-image: linear-gradient(transparent 70%, var(--color-aus-gold) 70%);
 }

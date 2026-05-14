@@ -1,65 +1,150 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { Countdown } from '@/components/Countdown';
+import { ZipSearch } from '@/components/ZipSearch';
+import { PartyCard } from '@/components/PartyCard';
+import { listMatches, nextMatch } from '@/lib/matches';
+import { lookupZip } from '@/lib/geo/zip';
+import { listPublishedParties, partiesNear, type PartyWithMatch, type PartyWithDistance } from '@/lib/parties';
 
-export default function Home() {
+function formatKickoff(d: Date) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).format(d);
+}
+
+export const dynamic = 'force-dynamic';
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ zip?: string }>;
+}) {
+  const { zip } = await searchParams;
+  const next = await nextMatch();
+  const matches = await listMatches();
+
+  let parties: PartyWithMatch[] | PartyWithDistance[] = [];
+  let originLabel: string | null = null;
+  let zipNotFound = false;
+
+  if (zip) {
+    const origin = await lookupZip(zip);
+    if (origin) {
+      parties = await partiesNear(origin);
+      originLabel = origin.city && origin.state ? `${origin.city}, ${origin.state}` : zip;
+    } else {
+      zipNotFound = true;
+      parties = await listPublishedParties();
+    }
+  } else {
+    parties = await listPublishedParties();
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div>
+      {/* HERO */}
+      <section className="aus-stripes text-aus-gold">
+        <div className="mx-auto max-w-5xl px-4 py-12 sm:py-20">
+          <p className="font-display uppercase tracking-widest text-sm text-aus-gold-200">
+            Watch parties · United States
           </p>
+          <h1 className="mt-3 font-display text-4xl sm:text-6xl leading-[0.95] uppercase">
+            Find your <span className="text-white">Socceroos</span><br />
+            home ground.
+          </h1>
+          <p className="mt-5 max-w-xl text-aus-gold-200 text-base sm:text-lg leading-relaxed">
+            Pubs, clubs and venues across the country tuning in for the matches.
+            Punch in your ZIP — we&apos;ll show you the closest mob.
+          </p>
+
+          <div className="mt-7">
+            <ZipSearch initial={zip} />
+            {zipNotFound && (
+              <p className="mt-2 text-sm text-aus-gold-200">
+                We don&apos;t recognise that ZIP yet — showing all parties below.
+              </p>
+            )}
+          </div>
+
+          {next && (
+            <div className="mt-10 rounded-2xl bg-aus-green-900/60 backdrop-blur p-5 sm:p-6 border border-aus-gold/20 max-w-2xl">
+              <p className="text-xs uppercase tracking-widest text-aus-gold-200">
+                Next match
+              </p>
+              <p className="mt-1 font-display text-xl sm:text-2xl text-white">
+                AUS vs {next.opponent}
+              </p>
+              <p className="mt-1 text-sm text-aus-gold-200">
+                {formatKickoff(next.kickoffUtc)}
+                {next.isTbd && ' · time TBC'}
+              </p>
+              <div className="mt-5">
+                <Countdown targetIso={next.kickoffUtc.toISOString()} />
+              </div>
+            </div>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* PARTIES */}
+      <section id="parties" className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+        <div className="flex items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="font-display text-2xl sm:text-3xl uppercase">
+              {originLabel ? <>Parties near <span className="gold-underline">{originLabel}</span></> : 'All parties'}
+            </h2>
+            <p className="text-sm text-neutral-600 mt-1">
+              {parties.length === 0
+                ? 'No parties listed yet — check back soon.'
+                : `${parties.length} ${parties.length === 1 ? 'venue' : 'venues'} signed up so far.`}
+            </p>
+          </div>
         </div>
-      </main>
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+          {parties.map((p) => (
+            <PartyCard key={p.id} p={p} />
+          ))}
+        </div>
+      </section>
+
+      {/* MATCHES */}
+      <section id="matches" className="bg-white border-t border-neutral-200">
+        <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
+          <h2 className="font-display text-2xl sm:text-3xl uppercase">The fixtures</h2>
+          <p className="text-sm text-neutral-600 mt-1">
+            Times shown in your local timezone. Some matches are still TBC.
+          </p>
+          <ul className="mt-6 divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-aus-paper">
+            {matches.map((m) => (
+              <li key={m.id}>
+                <Link
+                  href={`/match/${m.id}`}
+                  className="flex items-center justify-between gap-4 p-4 hover:bg-aus-cream transition"
+                >
+                  <div>
+                    <p className="font-display text-base sm:text-lg uppercase">
+                      AUS vs {m.opponent}
+                    </p>
+                    <p className="text-xs sm:text-sm text-neutral-600">
+                      {formatKickoff(m.kickoffUtc)}
+                      {m.venueCity && ` · ${m.venueCity}`}
+                      {m.isTbd && ' · TBC'}
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold text-aus-green hidden sm:inline">
+                    See parties →
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
     </div>
   );
 }
