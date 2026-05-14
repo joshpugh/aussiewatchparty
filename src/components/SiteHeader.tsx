@@ -8,7 +8,7 @@ export function SiteHeader() {
           href="/"
           className="font-display tracking-wide text-lg sm:text-xl uppercase leading-none"
         >
-          Socceroos<span className="text-white">.</span>Watch
+          Aussie<span className="text-white"> </span>Watch<span className="text-white"> </span>Party
         </Link>
         <nav className="text-sm font-semibold flex items-center gap-4">
           <Link href="/#parties" className="hover:underline">

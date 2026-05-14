@@ -1,7 +1,9 @@
-# Socceroos Watch Parties
+# Aussie Watch Party
 
 Unofficial site that lists US watch parties for the Socceroos at the 2026 men's
 tournament, and lets fans RSVP. Built to celebrate Australia making the cup.
+
+Live at **aussiewatchparty.com**. Source repo: `joshpugh/aussiewatchparty`.
 
 > **Trademark note:** this site avoids saying "FIFA" / "FIFA World Cup" on-page.
 > We say "the tournament" / "the matches". Keep that posture if you edit copy.

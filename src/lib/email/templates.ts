@@ -27,7 +27,7 @@ function shell(title: string, body: string) {
         </td></tr>
         <tr><td style="padding:24px">${body}</td></tr>
         <tr><td style="padding:16px 24px;background:#fafaf7;color:#737373;font-size:12px;line-height:1.5">
-          You're getting this because you RSVP'd at <a href="${siteUrl()}" style="color:#00843D">socceroos-watch-parties</a>.
+          You're getting this because you RSVP'd at <a href="${siteUrl()}" style="color:#00843D">aussiewatchparty.com</a>.
         </td></tr>
       </table>
     </td></tr>

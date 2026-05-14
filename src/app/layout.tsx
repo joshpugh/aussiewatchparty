@@ -18,13 +18,13 @@ const sans = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: {
-    default: 'Socceroos Watch Parties',
-    template: '%s — Socceroos Watch Parties',
+    default: 'Aussie Watch Party',
+    template: '%s — Aussie Watch Party',
   },
   description:
     "Find a Socceroos watch party near you. Pubs, clubs and venues across the US tuning in for the matches.",
   openGraph: {
-    title: 'Socceroos Watch Parties',
+    title: 'Aussie Watch Party',
     description: 'Find a Socceroos watch party near you.',
     type: 'website',
   },
