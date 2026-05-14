@@ -7,7 +7,9 @@
  * Requires `unzip` on PATH (macOS / Linux ship it; Windows users: install it
  * via WSL or 7zip).
  */
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config();
 import { execFileSync } from 'node:child_process';
 import { createReadStream, mkdtempSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
