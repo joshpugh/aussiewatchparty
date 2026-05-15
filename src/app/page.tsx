@@ -3,6 +3,7 @@ import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
 import { HomeBoard } from '@/components/HomeBoard';
 import { KickoffTime } from '@/components/KickoffTime';
+import { PoweredBy } from '@/components/PoweredBy';
 import { type MapOrigin } from '@/components/PartiesMap';
 import { listMatches, nextMatch } from '@/lib/matches';
 import { lookupZip } from '@/lib/geo/zip';
@@ -99,6 +100,9 @@ export default async function Home({
           )}
         </div>
       </section>
+
+      {/* PARTNERS STRIP */}
+      <PoweredBy />
 
       {/* PARTIES + MAP (filterable) */}
       <section id="parties" className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
