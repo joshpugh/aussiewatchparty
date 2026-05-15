@@ -2,8 +2,11 @@
 # Pushes every non-empty key in .env.local to the linked Vercel project
 # for the `production` and `preview` environments.
 #
-# Usage: ./scripts/push-env.sh
-# Requires: vercel CLI logged in, project linked (`vercel link`).
+# Usage:
+#   ./scripts/push-env.sh                 # uses interactive vercel auth
+#   VERCEL_TOKEN=vcp_... ./scripts/push-env.sh   # token-based
+#
+# Requires: vercel CLI, project linked (`vercel link`).
 set -euo pipefail
 
 ENV_FILE="${1:-.env.local}"
@@ -12,11 +15,14 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
+TOKEN_ARG=()
+if [[ -n "${VERCEL_TOKEN:-}" ]]; then
+  TOKEN_ARG=(--token "$VERCEL_TOKEN")
+fi
+
 SKIP_KEYS=("NEXT_PUBLIC_SITE_URL")  # set per-env separately
 
-# Strip comments + blank lines, only export KEY=VALUE lines
 while IFS= read -r line || [[ -n "$line" ]]; do
-  # skip empty / comment
   [[ -z "${line// }" ]] && continue
   [[ "${line:0:1}" == "#" ]] && continue
 
@@ -32,9 +38,8 @@ while IFS= read -r line || [[ -n "$line" ]]; do
   if [[ $skip -eq 1 ]]; then echo "skip (manual): $key"; continue; fi
 
   for env in production preview; do
-    # Remove existing value silently, then add fresh
-    printf '%s' "$value" | vercel env rm "$key" "$env" --yes >/dev/null 2>&1 || true
-    printf '%s' "$value" | vercel env add "$key" "$env" >/dev/null
+    printf '%s' "$value" | vercel env rm "$key" "$env" "${TOKEN_ARG[@]}" --yes >/dev/null 2>&1 || true
+    printf '%s' "$value" | vercel env add "$key" "$env" "${TOKEN_ARG[@]}" >/dev/null
     echo "set: $key ($env)"
   done
 done < "$ENV_FILE"
