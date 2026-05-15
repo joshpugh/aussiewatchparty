@@ -5,7 +5,13 @@ import { PartyCard } from '@/components/PartyCard';
 import { PartiesMap, type MapParty } from '@/components/PartiesMap';
 import { listMatches, nextMatch } from '@/lib/matches';
 import { lookupZip } from '@/lib/geo/zip';
-import { listPublishedParties, partiesNear, type PartyWithMatch, type PartyWithDistance } from '@/lib/parties';
+import {
+  listPublishedParties,
+  partiesNearGrouped,
+  NEAR_RADIUS_MI,
+  type PartyWithMatch,
+  type PartyWithDistance,
+} from '@/lib/parties';
 
 function formatKickoff(d: Date) {
   return new Intl.DateTimeFormat('en-US', {
@@ -16,6 +22,18 @@ function formatKickoff(d: Date) {
     minute: '2-digit',
     timeZoneName: 'short',
   }).format(d);
+}
+
+function toMapParty(p: PartyWithMatch | PartyWithDistance): MapParty {
+  return {
+    slug: p.slug,
+    venueName: p.venueName,
+    city: p.city,
+    state: p.state,
+    lat: p.lat,
+    lng: p.lng,
+    matchOpponent: p.match.opponent,
+  };
 }
 
 export const dynamic = 'force-dynamic';
@@ -29,21 +47,24 @@ export default async function Home({
   const next = await nextMatch();
   const matches = await listMatches();
 
-  let parties: PartyWithMatch[] | PartyWithDistance[] = [];
+  // Map always shows every watch party, so visitors get a national picture.
+  const allParties: PartyWithMatch[] = await listPublishedParties();
+
+  let near: PartyWithDistance[] = [];
+  let elsewhere: PartyWithDistance[] = [];
   let originLabel: string | null = null;
   let zipNotFound = false;
 
   if (zip) {
     const origin = await lookupZip(zip);
     if (origin) {
-      parties = await partiesNear(origin);
+      const grouped = await partiesNearGrouped(origin, NEAR_RADIUS_MI);
+      near = grouped.near;
+      elsewhere = grouped.elsewhere;
       originLabel = origin.city && origin.state ? `${origin.city}, ${origin.state}` : zip;
     } else {
       zipNotFound = true;
-      parties = await listPublishedParties();
     }
-  } else {
-    parties = await listPublishedParties();
   }
 
   return (
@@ -67,7 +88,7 @@ export default async function Home({
             <ZipSearch initial={zip} />
             {zipNotFound && (
               <p className="mt-2 text-sm text-aus-gold-200">
-                We don&apos;t recognise that ZIP yet — showing all parties below.
+                We don&apos;t recognise that ZIP yet — try a 5-digit US ZIP, or browse all watch parties below.
               </p>
             )}
           </div>
@@ -92,42 +113,68 @@ export default async function Home({
         </div>
       </section>
 
+      {/* MAP — always all parties for national context */}
+      {allParties.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 pt-10 sm:pt-14">
+          <PartiesMap parties={allParties.map(toMapParty)} />
+        </section>
+      )}
+
       {/* PARTIES */}
-      <section id="parties" className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
-        <div className="flex items-end justify-between gap-4 mb-6">
-          <div>
-            <h2 className="font-display text-2xl sm:text-3xl uppercase">
-              {originLabel ? <>Parties near <span className="gold-underline">{originLabel}</span></> : 'All parties'}
-            </h2>
-            <p className="text-sm text-neutral-600 mt-1">
-              {parties.length === 0
-                ? 'No parties listed yet — check back soon.'
-                : `${parties.length} ${parties.length === 1 ? 'venue' : 'venues'} signed up so far.`}
-            </p>
-          </div>
-        </div>
+      <section id="parties" className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
+        {originLabel ? (
+          <>
+            {/* NEAR YOU */}
+            <div className="mb-2">
+              <h2 className="font-display text-2xl sm:text-3xl uppercase">
+                Watch parties near <span className="gold-underline">{originLabel}</span>
+              </h2>
+              <p className="text-sm text-neutral-600 mt-1">
+                {near.length > 0
+                  ? `${near.length} within ${NEAR_RADIUS_MI} mi.`
+                  : `Nothing within ${NEAR_RADIUS_MI} mi yet — the closest ones across the country are below.`}
+              </p>
+            </div>
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+              {near.map((p) => (
+                <PartyCard key={p.id} p={p} />
+              ))}
+            </div>
 
-        {parties.length > 0 && (
-          <div className="mb-6">
-            <PartiesMap
-              parties={parties.map<MapParty>((p) => ({
-                slug: p.slug,
-                venueName: p.venueName,
-                city: p.city,
-                state: p.state,
-                lat: p.lat,
-                lng: p.lng,
-                matchOpponent: p.match.opponent,
-              }))}
-            />
-          </div>
+            {/* ELSEWHERE */}
+            {elsewhere.length > 0 && (
+              <div className="mt-10">
+                <h3 className="font-display text-xl sm:text-2xl uppercase">
+                  More watch parties across the country
+                </h3>
+                <p className="text-sm text-neutral-600 mt-1">
+                  Sorted by distance from {originLabel}.
+                </p>
+                <div className="mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
+                  {elsewhere.map((p) => (
+                    <PartyCard key={p.id} p={p} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="mb-6">
+              <h2 className="font-display text-2xl sm:text-3xl uppercase">All watch parties</h2>
+              <p className="text-sm text-neutral-600 mt-1">
+                {allParties.length === 0
+                  ? 'No watch parties listed yet — check back soon.'
+                  : `${allParties.length} ${allParties.length === 1 ? 'venue' : 'venues'} signed up so far. Enter your ZIP above to sort by distance.`}
+              </p>
+            </div>
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+              {allParties.map((p) => (
+                <PartyCard key={p.id} p={p} />
+              ))}
+            </div>
+          </>
         )}
-
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-          {parties.map((p) => (
-            <PartyCard key={p.id} p={p} />
-          ))}
-        </div>
       </section>
 
       {/* MATCHES */}
@@ -155,7 +202,7 @@ export default async function Home({
                     </p>
                   </div>
                   <span className="text-sm font-semibold text-aus-green hidden sm:inline">
-                    See parties →
+                    See watch parties →
                   </span>
                 </Link>
               </li>

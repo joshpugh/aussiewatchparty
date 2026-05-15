@@ -43,7 +43,7 @@ export default async function PartyDetailPage({
     <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
       <p className="text-sm">
         <Link href="/" className="text-aus-green hover:underline">
-          ← All parties
+          ← All watch parties
         </Link>
       </p>
 

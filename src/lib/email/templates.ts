@@ -55,11 +55,11 @@ export function confirmationEmail({
     <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 16px">
       <tr><td style="padding:4px 0;color:#737373;width:120px">Kickoff</td><td>${formatKickoff(match.kickoffUtc)}</td></tr>
       <tr><td style="padding:4px 0;color:#737373">Where</td><td>${party.venueName}<br>${party.addressLine}, ${party.city}, ${party.state} ${party.zip}</td></tr>
-      <tr><td style="padding:4px 0;color:#737373">Your party</td><td>${rsvp.partySize} ${rsvp.partySize === 1 ? 'person' : 'people'}</td></tr>
+      <tr><td style="padding:4px 0;color:#737373">Your group</td><td>${rsvp.partySize} ${rsvp.partySize === 1 ? 'person' : 'people'}</td></tr>
     </table>
     ${party.hostNotes ? `<p style="margin:0 0 16px;padding:12px;background:#fff8dc;border-left:3px solid #FFCD00;line-height:1.55">${party.hostNotes}</p>` : ''}
     <p style="margin:0 0 20px">
-      <a href="${partyUrl}" style="display:inline-block;padding:12px 20px;background:#00843D;color:#FFCD00;border-radius:8px;text-decoration:none;font-weight:700">View party details</a>
+      <a href="${partyUrl}" style="display:inline-block;padding:12px 20px;background:#00843D;color:#FFCD00;border-radius:8px;text-decoration:none;font-weight:700">View watch party details</a>
     </p>
     <p style="margin:0;color:#737373;font-size:13px;line-height:1.5">
       We'll send a reminder ~24 hours before kickoff. If plans change, just reply to this email and we'll sort it.
@@ -93,10 +93,10 @@ export function reminderEmail({
     </p>
     <table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 16px">
       <tr><td style="padding:4px 0;color:#737373;width:120px">Where</td><td>${party.venueName}<br>${party.addressLine}, ${party.city}, ${party.state} ${party.zip}</td></tr>
-      <tr><td style="padding:4px 0;color:#737373">Your party</td><td>${rsvp.partySize} ${rsvp.partySize === 1 ? 'person' : 'people'}</td></tr>
+      <tr><td style="padding:4px 0;color:#737373">Your group</td><td>${rsvp.partySize} ${rsvp.partySize === 1 ? 'person' : 'people'}</td></tr>
     </table>
     <p style="margin:0 0 20px">
-      <a href="${partyUrl}" style="display:inline-block;padding:12px 20px;background:#00843D;color:#FFCD00;border-radius:8px;text-decoration:none;font-weight:700">Party details</a>
+      <a href="${partyUrl}" style="display:inline-block;padding:12px 20px;background:#00843D;color:#FFCD00;border-radius:8px;text-decoration:none;font-weight:700">Watch party details</a>
     </p>
   `;
   return {

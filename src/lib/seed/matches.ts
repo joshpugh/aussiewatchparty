@@ -18,14 +18,14 @@ import type { NewMatch } from '@/lib/db/schema';
 export const SOCCEROOS_MATCHES: NewMatch[] = [
   {
     id: 'aus-group-1',
-    opponent: 'UEFA Play-off C winner',
+    opponent: 'Türkiye',
     stage: 'group',
     // Sat Jun 13, 9:00 PM PT — BC Place, Vancouver
     kickoffUtc: new Date('2026-06-14T04:00:00Z'),
     venueCity: 'Vancouver',
     venueCountry: 'Canada',
-    notes: 'BC Place. Opponent: winner of UEFA Play-off C (Türkiye, Romania, Slovakia, or Kosovo).',
-    isTbd: true,
+    notes: 'BC Place. Türkiye qualified via UEFA Play-off C.',
+    isTbd: false,
   },
   {
     id: 'aus-group-2',

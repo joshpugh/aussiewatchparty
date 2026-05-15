@@ -7,6 +7,9 @@ import { haversineMiles } from '@/lib/geo/distance';
 export type PartyWithMatch = Party & { match: Match };
 export type PartyWithDistance = PartyWithMatch & { distanceMi: number };
 
+/** Default "near you" radius in miles. */
+export const NEAR_RADIUS_MI = 75;
+
 export async function listPublishedParties(): Promise<PartyWithMatch[]> {
   const rows = await db
     .select()
@@ -17,15 +20,23 @@ export async function listPublishedParties(): Promise<PartyWithMatch[]> {
   return rows.map((r) => ({ ...r.parties, match: r.matches }));
 }
 
-export async function partiesNear(
+/**
+ * Splits all published parties into `near` (within `radiusMi` of the
+ * origin, sorted by distance) and `elsewhere` (all the rest, also sorted
+ * by distance). The map still gets the whole list; the UI groups them
+ * so "near" isn't misleading.
+ */
+export async function partiesNearGrouped(
   origin: { lat: number; lng: number },
-  limit = 12,
-): Promise<PartyWithDistance[]> {
+  radiusMi = NEAR_RADIUS_MI,
+): Promise<{ near: PartyWithDistance[]; elsewhere: PartyWithDistance[]; radiusMi: number }> {
   const all = await listPublishedParties();
-  return all
+  const withDist = all
     .map((p) => ({ ...p, distanceMi: haversineMiles(origin, p) }))
-    .sort((a, b) => a.distanceMi - b.distanceMi)
-    .slice(0, limit);
+    .sort((a, b) => a.distanceMi - b.distanceMi);
+  const near = withDist.filter((p) => p.distanceMi <= radiusMi);
+  const elsewhere = withDist.filter((p) => p.distanceMi > radiusMi);
+  return { near, elsewhere, radiusMi };
 }
 
 export async function partyBySlug(slug: string): Promise<PartyWithMatch | null> {

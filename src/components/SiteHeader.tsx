@@ -12,7 +12,7 @@ export function SiteHeader() {
         </Link>
         <nav className="text-sm font-semibold flex items-center gap-4">
           <Link href="/#parties" className="hover:underline">
-            Find a party
+            Find a watch party
           </Link>
           <Link href="/#matches" className="hover:underline hidden sm:inline">
             Matches

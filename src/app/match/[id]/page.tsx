@@ -54,7 +54,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
       <section className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
         <h2 className="font-display text-2xl sm:text-3xl uppercase">
-          {parties.length} {parties.length === 1 ? 'party' : 'parties'} for this one
+          {parties.length} {parties.length === 1 ? 'watch party' : 'watch parties'} for this one
         </h2>
         {match.notes && <p className="mt-2 text-neutral-700">{match.notes}</p>}
         <div className="mt-6 grid gap-3 sm:gap-4 sm:grid-cols-2">
@@ -62,7 +62,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
             <PartyCard key={p.id} p={p} />
           ))}
           {parties.length === 0 && (
-            <p className="text-neutral-600">No parties for this match yet. Check back soon.</p>
+            <p className="text-neutral-600">No watch parties for this match yet. Check back soon.</p>
           )}
         </div>
       </section>

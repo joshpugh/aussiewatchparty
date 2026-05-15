@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </span>
             <nav className="flex items-center gap-4">
               <Link href="/admin/parties" className="hover:underline">
-                Parties
+                Watch parties
               </Link>
               <Link href="/admin/rsvps" className="hover:underline">
                 RSVPs

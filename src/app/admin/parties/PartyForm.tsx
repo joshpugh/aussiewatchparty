@@ -82,6 +82,7 @@ export function PartyForm({ matches, party }: Props) {
   async function onDelete() {
     if (!party) return;
     if (!confirm(`Delete "${party.venueName}"? This also removes its RSVPs.`)) return;
+    // (keeps the venue name in the confirm so it reads naturally — no "watch party" prefix needed)
     await fetch(`/api/admin/parties/${party.id}`, { method: 'DELETE' });
     router.push('/admin/parties');
     router.refresh();

@@ -12,12 +12,12 @@ export default async function AdminPartiesList() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl uppercase">Parties</h1>
+        <h1 className="font-display text-2xl uppercase">Watch parties</h1>
         <Link
           href="/admin/parties/new"
           className="rounded-lg bg-aus-green text-aus-gold font-display uppercase px-4 py-2 hover:bg-aus-green-700"
         >
-          + New party
+          + New watch party
         </Link>
       </div>
 
@@ -55,7 +55,7 @@ export default async function AdminPartiesList() {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">
-                  No parties yet. Add the first one above.
+                  No watch parties yet. Add the first one above.
                 </td>
               </tr>
             )}

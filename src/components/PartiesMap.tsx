@@ -27,7 +27,7 @@ function formatPopup(p: MapParty) {
       </div>
       <a href="/parties/${encodeURIComponent(p.slug)}"
          style="display:inline-block; margin-top: 10px; padding: 6px 10px; background: #00843D; color: #FFCD00; border-radius: 6px; text-decoration: none; font-weight: 700; font-size: 12px">
-        View party →
+        View watch party →
       </a>
     </div>
   `;

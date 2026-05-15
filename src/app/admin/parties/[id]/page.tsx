@@ -25,7 +25,7 @@ export default async function EditPartyPage({
     <div className="mx-auto max-w-3xl px-4 py-8">
       <p className="text-sm">
         <Link href="/admin/parties" className="text-aus-green hover:underline">
-          ← All parties
+          ← All watch parties
         </Link>
       </p>
       <h1 className="mt-2 font-display text-2xl uppercase">Edit: {party.venueName}</h1>
