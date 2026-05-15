@@ -8,12 +8,17 @@ import type { PartyWithMatch } from '@/lib/parties';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aussiewatchparty.com';
 
-export function matchJsonLd(m: Match) {
+/**
+ * Builds the SportsEvent body for a match. Used both as the top-level
+ * JSON-LD on /match/[id] AND embedded as the `superEvent` on every party
+ * page so Google can connect the watch-party Event to its parent match.
+ */
+function buildMatchSchema(m: Match) {
   const url = `${SITE_URL}/match/${m.id}`;
 
-  // SportsEvent requires `location`. Build the richest object we can from
-  // whatever we have: stadium > city > country. Always returns a Place so
-  // the schema is structurally valid even before we have full venue data.
+  // SportsEvent requires `location`. Build the richest object we have from
+  // whatever's available: stadium > city > country. Always returns a Place
+  // so the schema is structurally valid even before full venue data.
   const placeName = m.venueStadium ?? m.venueCity ?? 'TBD';
   const addressParts: Record<string, string> = {};
   if (m.venueCity) addressParts.addressLocality = m.venueCity;
@@ -33,8 +38,7 @@ export function matchJsonLd(m: Match) {
   const endDate = new Date(m.kickoffUtc.getTime() + 2 * 60 * 60 * 1000);
 
   return {
-    '@context': 'https://schema.org',
-    '@type': 'SportsEvent',
+    '@type': 'SportsEvent' as const,
     name: `Australia vs ${m.opponent}`,
     description: `${m.stage === 'group' ? 'Group D' : 'Knockout'} match: Australia vs ${m.opponent}.${m.notes ? ` ${m.notes}` : ''}`,
     sport: 'Association Football',
@@ -45,23 +49,34 @@ export function matchJsonLd(m: Match) {
     url,
     image: `${url}/opengraph-image`,
     location,
-    homeTeam: { '@type': 'SportsTeam', name: 'Australia' },
-    awayTeam: { '@type': 'SportsTeam', name: m.opponent },
+    homeTeam: { '@type': 'SportsTeam' as const, name: 'Australia' },
+    awayTeam: { '@type': 'SportsTeam' as const, name: m.opponent },
     competitor: [
-      { '@type': 'SportsTeam', name: 'Australia (Socceroos)' },
-      { '@type': 'SportsTeam', name: m.opponent },
+      { '@type': 'SportsTeam' as const, name: 'Australia (Socceroos)' },
+      { '@type': 'SportsTeam' as const, name: m.opponent },
     ],
     organizer: {
-      '@type': 'Organization',
+      '@type': 'Organization' as const,
       name: 'FIFA',
       url: 'https://www.fifa.com/',
     },
   };
 }
 
+export function matchJsonLd(m: Match) {
+  return {
+    '@context': 'https://schema.org',
+    ...buildMatchSchema(m),
+  };
+}
+
 export function partyJsonLd(p: PartyWithMatch) {
   const url = `${SITE_URL}/parties/${p.slug}`;
-  const matchUrl = `${SITE_URL}/match/${p.match.id}`;
+  // Soccer matches typically last ~2h with stoppage time; close the
+  // watch-party event window at the same offset so calendar tools can
+  // schedule it cleanly.
+  const endDate = new Date(p.match.kickoffUtc.getTime() + 2 * 60 * 60 * 1000);
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -70,6 +85,7 @@ export function partyJsonLd(p: PartyWithMatch) {
       p.hostNotes ??
       `Public watch party for the Socceroos match against ${p.match.opponent} at ${p.venueName} in ${p.city}, ${p.state}.`,
     startDate: p.match.kickoffUtc.toISOString(),
+    endDate: endDate.toISOString(),
     url,
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
@@ -106,11 +122,8 @@ export function partyJsonLd(p: PartyWithMatch) {
       validFrom: p.createdAt.toISOString(),
     },
     maximumAttendeeCapacity: p.capacity ?? undefined,
-    superEvent: {
-      '@type': 'SportsEvent',
-      name: `Australia vs ${p.match.opponent}`,
-      url: matchUrl,
-      startDate: p.match.kickoffUtc.toISOString(),
-    },
+    // Full SportsEvent (incl. its own required `location`) so Google can
+    // validate the nested event and connect the watch party to the match.
+    superEvent: buildMatchSchema(p.match),
   };
 }
