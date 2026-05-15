@@ -1,16 +1,16 @@
 import Link from 'next/link';
 import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
-import { PartyCard } from '@/components/PartyCard';
-import { PartiesMap, type MapParty, type MapOrigin } from '@/components/PartiesMap';
+import { HomeBoard } from '@/components/HomeBoard';
+import { type MapOrigin } from '@/components/PartiesMap';
 import { listMatches, nextMatch } from '@/lib/matches';
 import { lookupZip } from '@/lib/geo/zip';
 import {
   listPublishedParties,
   partiesNearGrouped,
   NEAR_RADIUS_MI,
-  type PartyWithMatch,
   type PartyWithDistance,
+  type PartyWithMatch,
 } from '@/lib/parties';
 
 function formatKickoff(d: Date) {
@@ -24,18 +24,6 @@ function formatKickoff(d: Date) {
   }).format(d);
 }
 
-function toMapParty(p: PartyWithMatch | PartyWithDistance): MapParty {
-  return {
-    slug: p.slug,
-    venueName: p.venueName,
-    city: p.city,
-    state: p.state,
-    lat: p.lat,
-    lng: p.lng,
-    matchOpponent: p.match.opponent,
-  };
-}
-
 export const dynamic = 'force-dynamic';
 
 export default async function Home({
@@ -47,7 +35,6 @@ export default async function Home({
   const next = await nextMatch();
   const matches = await listMatches();
 
-  // Map always shows every watch party, so visitors get a national picture.
   const allParties: PartyWithMatch[] = await listPublishedParties();
 
   let near: PartyWithDistance[] = [];
@@ -96,10 +83,18 @@ export default async function Home({
           </div>
 
           {next && (
-            <div className="mt-10 rounded-2xl bg-aus-green-900/60 backdrop-blur p-5 sm:p-6 border border-aus-gold/20 max-w-2xl">
-              <p className="text-xs uppercase tracking-widest text-aus-gold-200">
-                Next match
-              </p>
+            <Link
+              href={`/match/${next.id}`}
+              className="group mt-10 block max-w-2xl rounded-2xl bg-aus-green-900/60 backdrop-blur p-5 sm:p-6 border border-aus-gold/20 hover:border-aus-gold/60 transition"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-widest text-aus-gold-200">
+                  Next match
+                </p>
+                <span className="text-xs font-semibold text-aus-gold-200 group-hover:text-aus-gold transition">
+                  See watch parties →
+                </span>
+              </div>
               <p className="mt-1 font-display text-xl sm:text-2xl text-white">
                 AUS vs {next.opponent}
               </p>
@@ -110,81 +105,25 @@ export default async function Home({
               <div className="mt-5">
                 <Countdown targetIso={next.kickoffUtc.toISOString()} />
               </div>
-            </div>
+            </Link>
           )}
         </div>
       </section>
 
-      {/* MAP — every watch party is rendered, but when a ZIP is provided we
-          zoom to that area and draw the search radius. */}
-      {allParties.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 pt-10 sm:pt-14">
-          <PartiesMap
-            parties={allParties.map(toMapParty)}
-            origin={mapOrigin}
-            radiusMi={NEAR_RADIUS_MI}
-          />
-        </section>
-      )}
-
-      {/* PARTIES */}
+      {/* PARTIES + MAP (filterable) */}
       <section id="parties" className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
-        {originLabel ? (
-          <>
-            {/* NEAR YOU */}
-            <div className="mb-2">
-              <h2 className="font-display text-2xl sm:text-3xl uppercase">
-                Watch parties near <span className="gold-underline">{originLabel}</span>
-              </h2>
-              <p className="text-sm text-neutral-600 mt-1">
-                {near.length > 0
-                  ? `${near.length} within ${NEAR_RADIUS_MI} mi.`
-                  : `Nothing within ${NEAR_RADIUS_MI} mi yet — the closest ones across America are below.`}
-              </p>
-            </div>
-            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-              {near.map((p) => (
-                <PartyCard key={p.id} p={p} />
-              ))}
-            </div>
-
-            {/* ELSEWHERE */}
-            {elsewhere.length > 0 && (
-              <div className="mt-10">
-                <h3 className="font-display text-xl sm:text-2xl uppercase">
-                  More watch parties across America
-                </h3>
-                <p className="text-sm text-neutral-600 mt-1">
-                  Sorted by distance from {originLabel}.
-                </p>
-                <div className="mt-4 grid gap-3 sm:gap-4 sm:grid-cols-2">
-                  {elsewhere.map((p) => (
-                    <PartyCard key={p.id} p={p} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="mb-6">
-              <h2 className="font-display text-2xl sm:text-3xl uppercase">All watch parties</h2>
-              <p className="text-sm text-neutral-600 mt-1">
-                {allParties.length === 0
-                  ? 'No watch parties listed yet — check back soon.'
-                  : `${allParties.length} ${allParties.length === 1 ? 'venue' : 'venues'} signed up so far. Enter your ZIP above to sort by distance.`}
-              </p>
-            </div>
-            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-              {allParties.map((p) => (
-                <PartyCard key={p.id} p={p} />
-              ))}
-            </div>
-          </>
-        )}
+        <HomeBoard
+          allParties={allParties}
+          near={near}
+          elsewhere={elsewhere}
+          matches={matches}
+          originLabel={originLabel}
+          mapOrigin={mapOrigin}
+          radiusMi={NEAR_RADIUS_MI}
+        />
       </section>
 
-      {/* MATCHES */}
+      {/* FIXTURES */}
       <section id="matches" className="bg-white border-t border-neutral-200">
         <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
           <h2 className="font-display text-2xl sm:text-3xl uppercase">The fixtures</h2>
