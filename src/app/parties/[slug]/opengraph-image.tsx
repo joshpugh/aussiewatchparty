@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { notFound } from 'next/navigation';
 import { partyBySlug } from '@/lib/parties';
 import { COLORS, OG_CONTENT_TYPE, OG_SIZE, STRIPES_BG, formatKickoffET } from '@/lib/og';
+import { getOgFonts } from '@/lib/og-fonts';
 
 export const runtime = 'nodejs';
 export const size = OG_SIZE;
@@ -16,10 +17,11 @@ export default async function PartyOgImage({
   const { slug } = await params;
   const p = await partyBySlug(slug);
   if (!p) notFound();
+  const fonts = await getOgFonts();
 
-  // Scale venue name down if it's long so it doesn't overflow.
+  // Scale venue name to fit, since names vary widely.
   const nameLen = p.venueName.length;
-  const venueFontSize = nameLen > 24 ? 86 : nameLen > 16 ? 106 : 130;
+  const venueFontSize = nameLen > 24 ? 92 : nameLen > 16 ? 112 : 134;
 
   return new ImageResponse(
     (
@@ -32,7 +34,7 @@ export default async function PartyOgImage({
           padding: '72px 80px',
           backgroundImage: STRIPES_BG,
           color: COLORS.gold,
-          fontFamily: 'sans-serif',
+          fontFamily: 'Archivo',
         }}
       >
         <div
@@ -41,8 +43,9 @@ export default async function PartyOgImage({
             fontSize: 26,
             letterSpacing: 4,
             textTransform: 'uppercase',
-            fontWeight: 800,
+            fontWeight: 700,
             color: COLORS.goldLight,
+            fontFamily: 'Archivo',
           }}
         >
           {`Watch Party · ${p.city}, ${p.state}`}
@@ -53,25 +56,23 @@ export default async function PartyOgImage({
             <div
               style={{
                 fontSize: venueFontSize,
-                fontWeight: 900,
                 color: COLORS.white,
                 lineHeight: 1.0,
                 textTransform: 'uppercase',
-                letterSpacing: -2,
                 maxWidth: 1040,
+                fontFamily: 'Archivo Black',
               }}
             >
               {p.venueName}
             </div>
             <div
               style={{
-                marginTop: 28,
-                fontSize: 56,
-                fontWeight: 900,
+                marginTop: 30,
+                fontSize: 58,
                 color: COLORS.gold,
-                lineHeight: 1.05,
+                lineHeight: 1.0,
                 textTransform: 'uppercase',
-                letterSpacing: -1,
+                fontFamily: 'Archivo Black',
               }}
             >
               {`AUS vs ${p.match.opponent}`}
@@ -82,7 +83,8 @@ export default async function PartyOgImage({
                 marginTop: 14,
                 fontSize: 28,
                 color: COLORS.white,
-                fontWeight: 600,
+                fontWeight: 700,
+                fontFamily: 'Archivo',
               }}
             >
               {formatKickoffET(p.match.kickoffUtc)}
@@ -98,6 +100,7 @@ export default async function PartyOgImage({
             fontSize: 24,
             fontWeight: 700,
             color: COLORS.gold,
+            fontFamily: 'Archivo',
           }}
         >
           <div style={{ display: 'flex' }}>aussiewatchparty.com</div>
@@ -105,6 +108,6 @@ export default async function PartyOgImage({
         </div>
       </div>
     ),
-    { ...size },
+    { ...size, fonts },
   );
 }

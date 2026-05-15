@@ -2,14 +2,12 @@ import { ImageResponse } from 'next/og';
 import { notFound } from 'next/navigation';
 import { matchById } from '@/lib/matches';
 import { COLORS, OG_CONTENT_TYPE, OG_SIZE, STRIPES_BG, formatKickoffET } from '@/lib/og';
+import { getOgFonts } from '@/lib/og-fonts';
 
 export const runtime = 'nodejs';
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
-
-// The default `alt` is replaced by `generateImageMetadata` if we had one; for
-// now Next.js uses this static export when the page's `<title>` is set.
-export const alt = "AUS match — Aussie Watch Party USA";
+export const alt = 'AUS match — Aussie Watch Party USA';
 
 export default async function MatchOgImage({
   params,
@@ -19,6 +17,10 @@ export default async function MatchOgImage({
   const { id } = await params;
   const match = await matchById(id);
   if (!match) notFound();
+  const fonts = await getOgFonts();
+
+  // Scale the opponent name down if it's longer than expected.
+  const opponentSize = match.opponent.length > 16 ? 110 : match.opponent.length > 10 ? 130 : 150;
 
   return new ImageResponse(
     (
@@ -31,7 +33,7 @@ export default async function MatchOgImage({
           padding: '72px 80px',
           backgroundImage: STRIPES_BG,
           color: COLORS.gold,
-          fontFamily: 'sans-serif',
+          fontFamily: 'Archivo',
         }}
       >
         <div
@@ -40,8 +42,9 @@ export default async function MatchOgImage({
             fontSize: 26,
             letterSpacing: 4,
             textTransform: 'uppercase',
-            fontWeight: 800,
+            fontWeight: 700,
             color: COLORS.goldLight,
+            fontFamily: 'Archivo',
           }}
         >
           {`${match.stage === 'group' ? 'Group D · 2026 Tournament' : 'Knockout · 2026 Tournament'}${match.isTbd ? ' · TBC' : ''}`}
@@ -52,36 +55,35 @@ export default async function MatchOgImage({
             <div
               style={{
                 fontSize: 96,
-                fontWeight: 900,
                 color: COLORS.white,
-                lineHeight: 1.02,
+                lineHeight: 1.0,
                 textTransform: 'uppercase',
-                letterSpacing: -2,
+                fontFamily: 'Archivo Black',
               }}
             >
               Australia
             </div>
             <div
               style={{
-                fontSize: 56,
+                fontSize: 50,
                 fontWeight: 700,
                 color: COLORS.goldLight,
-                lineHeight: 1.02,
+                lineHeight: 1.0,
                 textTransform: 'uppercase',
-                margin: '12px 0',
-                letterSpacing: 4,
+                margin: '14px 0',
+                letterSpacing: 6,
+                fontFamily: 'Archivo',
               }}
             >
               vs
             </div>
             <div
               style={{
-                fontSize: 140,
-                fontWeight: 900,
+                fontSize: opponentSize,
                 color: COLORS.gold,
                 lineHeight: 1.0,
                 textTransform: 'uppercase',
-                letterSpacing: -3,
+                fontFamily: 'Archivo Black',
               }}
             >
               {match.opponent}
@@ -90,14 +92,24 @@ export default async function MatchOgImage({
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                marginTop: 28,
-                fontSize: 28,
+                marginTop: 32,
                 color: COLORS.white,
+                fontFamily: 'Archivo',
               }}
             >
-              <div style={{ display: 'flex', fontWeight: 600 }}>{formatKickoffET(match.kickoffUtc)}</div>
+              <div style={{ display: 'flex', fontSize: 28, fontWeight: 700 }}>
+                {formatKickoffET(match.kickoffUtc)}
+              </div>
               {(match.venueStadium || match.venueCity) && (
-                <div style={{ display: 'flex', marginTop: 6, color: COLORS.goldLight }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    marginTop: 6,
+                    color: COLORS.goldLight,
+                    fontSize: 26,
+                    fontWeight: 400,
+                  }}
+                >
                   {match.venueStadium
                     ? `${match.venueStadium}${match.venueCity ? ` · ${match.venueCity}` : ''}`
                     : `${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`}
@@ -115,6 +127,7 @@ export default async function MatchOgImage({
             fontSize: 24,
             fontWeight: 700,
             color: COLORS.gold,
+            fontFamily: 'Archivo',
           }}
         >
           <div style={{ display: 'flex' }}>aussiewatchparty.com</div>
@@ -122,6 +135,6 @@ export default async function MatchOgImage({
         </div>
       </div>
     ),
-    { ...size },
+    { ...size, fonts },
   );
 }
