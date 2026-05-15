@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
 import { PartyCard } from '@/components/PartyCard';
-import { PartiesMap, type MapParty } from '@/components/PartiesMap';
+import { PartiesMap, type MapParty, type MapOrigin } from '@/components/PartiesMap';
 import { listMatches, nextMatch } from '@/lib/matches';
 import { lookupZip } from '@/lib/geo/zip';
 import {
@@ -53,6 +53,7 @@ export default async function Home({
   let near: PartyWithDistance[] = [];
   let elsewhere: PartyWithDistance[] = [];
   let originLabel: string | null = null;
+  let mapOrigin: MapOrigin | undefined;
   let zipNotFound = false;
 
   if (zip) {
@@ -62,6 +63,7 @@ export default async function Home({
       near = grouped.near;
       elsewhere = grouped.elsewhere;
       originLabel = origin.city && origin.state ? `${origin.city}, ${origin.state}` : zip;
+      mapOrigin = { lat: origin.lat, lng: origin.lng, label: originLabel };
     } else {
       zipNotFound = true;
     }
@@ -80,8 +82,8 @@ export default async function Home({
             home ground.
           </h1>
           <p className="mt-5 max-w-xl text-aus-gold-200 text-base sm:text-lg leading-relaxed">
-            Pubs, clubs and venues across the country tuning in for the matches.
-            Punch in your ZIP — we&apos;ll show you the closest mob.
+            Pubs, clubs and venues across America tuning in for the matches.
+            Enter your ZIP code — we&apos;ll show you the closest watch party.
           </p>
 
           <div className="mt-7">
@@ -113,10 +115,15 @@ export default async function Home({
         </div>
       </section>
 
-      {/* MAP — always all parties for national context */}
+      {/* MAP — every watch party is rendered, but when a ZIP is provided we
+          zoom to that area and draw the search radius. */}
       {allParties.length > 0 && (
         <section className="mx-auto max-w-5xl px-4 pt-10 sm:pt-14">
-          <PartiesMap parties={allParties.map(toMapParty)} />
+          <PartiesMap
+            parties={allParties.map(toMapParty)}
+            origin={mapOrigin}
+            radiusMi={NEAR_RADIUS_MI}
+          />
         </section>
       )}
 
@@ -132,7 +139,7 @@ export default async function Home({
               <p className="text-sm text-neutral-600 mt-1">
                 {near.length > 0
                   ? `${near.length} within ${NEAR_RADIUS_MI} mi.`
-                  : `Nothing within ${NEAR_RADIUS_MI} mi yet — the closest ones across the country are below.`}
+                  : `Nothing within ${NEAR_RADIUS_MI} mi yet — the closest ones across America are below.`}
               </p>
             </div>
             <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
@@ -145,7 +152,7 @@ export default async function Home({
             {elsewhere.length > 0 && (
               <div className="mt-10">
                 <h3 className="font-display text-xl sm:text-2xl uppercase">
-                  More watch parties across the country
+                  More watch parties across America
                 </h3>
                 <p className="text-sm text-neutral-600 mt-1">
                   Sorted by distance from {originLabel}.

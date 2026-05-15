@@ -25,7 +25,7 @@ function getClient() {
  * so module imports during `next build` (env-less) won't fail.
  */
 export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
-  get(_target, prop, receiver) {
+  get(_target, prop) {
     if (!_db) _db = drizzle(getClient(), { schema });
     // @ts-expect-error proxying through to the real instance
     const value = _db[prop];
