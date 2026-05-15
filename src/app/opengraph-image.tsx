@@ -41,7 +41,7 @@ export default async function HomeOgImage() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div
               style={{
-                fontSize: 124,
+                fontSize: 100,
                 color: COLORS.white,
                 lineHeight: 1.0,
                 textTransform: 'uppercase',
@@ -52,7 +52,7 @@ export default async function HomeOgImage() {
             </div>
             <div
               style={{
-                fontSize: 124,
+                fontSize: 100,
                 color: COLORS.gold,
                 lineHeight: 1.0,
                 textTransform: 'uppercase',
@@ -63,7 +63,7 @@ export default async function HomeOgImage() {
             </div>
             <div
               style={{
-                fontSize: 124,
+                fontSize: 100,
                 color: COLORS.white,
                 lineHeight: 1.0,
                 textTransform: 'uppercase',
@@ -74,8 +74,8 @@ export default async function HomeOgImage() {
             </div>
             <div
               style={{
-                marginTop: 32,
-                fontSize: 32,
+                marginTop: 24,
+                fontSize: 28,
                 fontWeight: 400,
                 color: COLORS.goldLight,
                 maxWidth: 900,
