@@ -96,9 +96,11 @@ export default async function MatchOgImage({
               }}
             >
               <div style={{ display: 'flex', fontWeight: 600 }}>{formatKickoffET(match.kickoffUtc)}</div>
-              {match.venueCity && (
+              {(match.venueStadium || match.venueCity) && (
                 <div style={{ display: 'flex', marginTop: 6, color: COLORS.goldLight }}>
-                  {`${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`}
+                  {match.venueStadium
+                    ? `${match.venueStadium}${match.venueCity ? ` · ${match.venueCity}` : ''}`
+                    : `${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`}
                 </div>
               )}
             </div>

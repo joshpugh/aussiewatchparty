@@ -6,12 +6,14 @@ import { sqliteTable, text, integer, real, uniqueIndex, index } from 'drizzle-or
  * Seeded from src/lib/seed/matches.ts; admins can also edit via SQL.
  */
 export const matches = sqliteTable('matches', {
-  id: text('id').primaryKey(), // human-readable slug e.g. "aus-vs-tbd-1"
-  opponent: text('opponent').notNull(), // e.g. "TBD" or "France"
-  stage: text('stage').notNull(), // group | r16 | qf | sf | f
+  id: text('id').primaryKey(),
+  opponent: text('opponent').notNull(),
+  stage: text('stage').notNull(),
   kickoffUtc: integer('kickoff_utc', { mode: 'timestamp' }).notNull(),
-  venueCity: text('venue_city'), // e.g. "Vancouver"
-  venueCountry: text('venue_country'),
+  venueStadium: text('venue_stadium'), // e.g. "BC Place", "Lumen Field"
+  venueCity: text('venue_city'),
+  venueRegion: text('venue_region'), // 2-letter state/province for US/CA
+  venueCountry: text('venue_country'), // ISO-3166-1 alpha-2: "US", "CA"
   notes: text('notes'),
   isTbd: integer('is_tbd', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),

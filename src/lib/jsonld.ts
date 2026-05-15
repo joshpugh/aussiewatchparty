@@ -10,6 +10,28 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://aussiewatchparty.c
 
 export function matchJsonLd(m: Match) {
   const url = `${SITE_URL}/match/${m.id}`;
+
+  // SportsEvent requires `location`. Build the richest object we can from
+  // whatever we have: stadium > city > country. Always returns a Place so
+  // the schema is structurally valid even before we have full venue data.
+  const placeName = m.venueStadium ?? m.venueCity ?? 'TBD';
+  const addressParts: Record<string, string> = {};
+  if (m.venueCity) addressParts.addressLocality = m.venueCity;
+  if (m.venueRegion) addressParts.addressRegion = m.venueRegion;
+  if (m.venueCountry) addressParts.addressCountry = m.venueCountry;
+  const location = {
+    '@type': 'Place' as const,
+    name: placeName,
+    address: {
+      '@type': 'PostalAddress' as const,
+      ...addressParts,
+    },
+  };
+
+  // Soccer matches are typically ~110 minutes including stoppage; round up
+  // to 2h so the event window covers most outcomes.
+  const endDate = new Date(m.kickoffUtc.getTime() + 2 * 60 * 60 * 1000);
+
   return {
     '@context': 'https://schema.org',
     '@type': 'SportsEvent',
@@ -17,25 +39,23 @@ export function matchJsonLd(m: Match) {
     description: `${m.stage === 'group' ? 'Group D' : 'Knockout'} match: Australia vs ${m.opponent}.${m.notes ? ` ${m.notes}` : ''}`,
     sport: 'Association Football',
     startDate: m.kickoffUtc.toISOString(),
+    endDate: endDate.toISOString(),
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/MixedEventAttendanceMode',
     url,
-    location: m.venueCity
-      ? {
-          '@type': 'Place',
-          name: m.venueCity,
-          address: {
-            '@type': 'PostalAddress',
-            addressLocality: m.venueCity,
-            addressCountry: m.venueCountry ?? undefined,
-          },
-        }
-      : undefined,
+    image: `${url}/opengraph-image`,
+    location,
+    homeTeam: { '@type': 'SportsTeam', name: 'Australia' },
+    awayTeam: { '@type': 'SportsTeam', name: m.opponent },
     competitor: [
       { '@type': 'SportsTeam', name: 'Australia (Socceroos)' },
       { '@type': 'SportsTeam', name: m.opponent },
     ],
-    organizer: { '@type': 'Organization', name: 'FIFA' },
+    organizer: {
+      '@type': 'Organization',
+      name: 'FIFA',
+      url: 'https://www.fifa.com/',
+    },
   };
 }
 

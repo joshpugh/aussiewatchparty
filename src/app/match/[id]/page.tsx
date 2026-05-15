@@ -23,7 +23,10 @@ export async function generateMetadata({
   if (!match) return {};
   const title = `AUS vs ${match.opponent}`;
   const venueBit = match.venueCity ? ` at ${match.venueCity}` : '';
-  const description = `Find a Socceroos watch party near you for AUS vs ${match.opponent}${venueBit}, ${formatKickoffET(match.kickoffUtc)}. Pubs, clubs and venues across America.`;
+  const venueStr = match.venueStadium
+    ? ` at ${match.venueStadium}${match.venueCity ? `, ${match.venueCity}` : ''}`
+    : venueBit;
+  const description = `Find a Socceroos watch party near you for AUS vs ${match.opponent}${venueStr}, ${formatKickoffET(match.kickoffUtc)}. Pubs, clubs and venues across America.`;
   const canonical = `/match/${id}`;
   return {
     title,
@@ -120,7 +123,11 @@ export default async function MatchPage({
           <p className="mt-3 text-aus-gold-200">
             <KickoffTime iso={match.kickoffUtc.toISOString()} />
             {match.isTbd && ' · TBC'}
-            {match.venueCity && ` · ${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`}
+            {match.venueStadium
+              ? ` · ${match.venueStadium}${match.venueCity ? `, ${match.venueCity}` : ''}`
+              : match.venueCity
+                ? ` · ${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`
+                : ''}
           </p>
           {match.notes && (
             <p className="mt-2 text-sm text-aus-gold-200 max-w-2xl">{match.notes}</p>
