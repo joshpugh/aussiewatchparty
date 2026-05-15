@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.3.3",
     "drizzle-orm": "^0.45.2",
     "mapbox-gl": "^3.23.1",
