@@ -24,8 +24,12 @@ export const PARTNERS: Partner[] = [
     url: 'https://americajosh.com',
     logoUrl: '/partners/america-josh.svg',
   },
-  // Add up to 3 more partners:
-  // { name: 'Partner Two', url: 'https://example.com', logoUrl: 'https://...' },
+  {
+    name: 'Qantas',
+    url: 'https://www.qantas.com',
+    logoUrl: '/partners/qantas.svg',
+  },
+  // Add up to 2 more partners:
   // { name: 'Partner Three', url: 'https://example.com', logoUrl: 'https://...' },
   // { name: 'Partner Four', url: 'https://example.com', logoUrl: 'https://...' },
 ];
