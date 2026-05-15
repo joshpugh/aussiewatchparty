@@ -21,6 +21,17 @@ export const matches = sqliteTable('matches', {
  * Parties — venues hosting a Socceroos watch party.
  * Admin-curated. Geocoded on save so we can sort by distance from a ZIP.
  */
+/**
+ * Status lifecycle:
+ *   - `pending`  — submitted by the public, awaiting admin review.
+ *   - `published` — visible on the public site.
+ *   - `rejected` — admin declined; hidden, retained for audit/email reasons.
+ *
+ * Admin-created parties skip `pending` and start at `published`.
+ */
+export const PARTY_STATUSES = ['pending', 'published', 'rejected'] as const;
+export type PartyStatus = (typeof PARTY_STATUSES)[number];
+
 export const parties = sqliteTable(
   'parties',
   {
@@ -31,15 +42,25 @@ export const parties = sqliteTable(
     venueLogoUrl: text('venue_logo_url'),
     addressLine: text('address_line').notNull(),
     city: text('city').notNull(),
-    state: text('state').notNull(), // 2-letter US state code
+    state: text('state').notNull(),
     zip: text('zip').notNull(),
     lat: real('lat').notNull(),
     lng: real('lng').notNull(),
-    hostNotes: text('host_notes'), // free text, e.g. "Bookings open at 6pm, food specials"
-    capacity: integer('capacity'), // optional
+    hostNotes: text('host_notes'),
+    capacity: integer('capacity'),
+    // Public-facing venue contact (optional, shown on the party page).
     contactEmail: text('contact_email'),
     websiteUrl: text('website_url'),
-    isPublished: integer('is_published', { mode: 'boolean' }).notNull().default(true),
+
+    // Private host contact (used to notify on RSVPs + for admin follow-up).
+    // Required for public submissions; optional when admin creates a party.
+    hostName: text('host_name'),
+    hostEmail: text('host_email'),
+    hostPhone: text('host_phone'),
+
+    status: text('status').notNull().default('published'), // PartyStatus
+    submittedBy: text('submitted_by'), // 'admin' | 'public'
+
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
   },
@@ -47,6 +68,7 @@ export const parties = sqliteTable(
     slugIdx: uniqueIndex('parties_slug_idx').on(t.slug),
     matchIdx: index('parties_match_idx').on(t.matchId),
     stateIdx: index('parties_state_idx').on(t.state),
+    statusIdx: index('parties_status_idx').on(t.status),
   }),
 );
 

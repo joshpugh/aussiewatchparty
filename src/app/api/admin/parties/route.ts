@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { randomBytes } from 'node:crypto';
 import { db } from '@/lib/db';
-import { parties } from '@/lib/db/schema';
+import { parties, PARTY_STATUSES } from '@/lib/db/schema';
 import { isAuthed } from '@/lib/auth/admin';
 import { geocodeAddress } from '@/lib/geo/geocode';
 
@@ -18,8 +18,10 @@ const Schema = z.object({
   capacity: z.number().int().positive().optional().nullable(),
   contactEmail: z.string().email().optional().nullable(),
   websiteUrl: z.string().url().optional().nullable(),
-  isPublished: z.boolean().default(true),
-  // Optional manual override if geocode fails:
+  hostName: z.string().max(200).optional().nullable(),
+  hostEmail: z.string().email().optional().nullable(),
+  hostPhone: z.string().max(40).optional().nullable(),
+  status: z.enum(PARTY_STATUSES).default('published'),
   lat: z.number().optional(),
   lng: z.number().optional(),
 });
@@ -82,7 +84,11 @@ export async function POST(req: Request) {
     capacity: v.capacity ?? null,
     contactEmail: v.contactEmail ?? null,
     websiteUrl: v.websiteUrl ?? null,
-    isPublished: v.isPublished,
+    hostName: v.hostName ?? null,
+    hostEmail: v.hostEmail ?? null,
+    hostPhone: v.hostPhone ?? null,
+    status: v.status,
+    submittedBy: 'admin',
     createdAt: new Date(),
     updatedAt: new Date(),
   });

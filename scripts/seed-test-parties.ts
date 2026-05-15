@@ -373,7 +373,8 @@ async function main() {
         capacity: p.capacity,
         contactEmail: p.contactEmail,
         websiteUrl: p.websiteUrl,
-        isPublished: true,
+        status: 'published',
+        submittedBy: 'admin',
         createdAt: new Date(),
         updatedAt: new Date(),
       });

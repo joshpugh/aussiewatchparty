@@ -15,7 +15,7 @@ export async function listPublishedParties(): Promise<PartyWithMatch[]> {
     .select()
     .from(parties)
     .innerJoin(matches, eq(parties.matchId, matches.id))
-    .where(eq(parties.isPublished, true))
+    .where(eq(parties.status, 'published'))
     .orderBy(asc(matches.kickoffUtc));
   return rows.map((r) => ({ ...r.parties, match: r.matches }));
 }
@@ -44,7 +44,7 @@ export async function partyBySlug(slug: string): Promise<PartyWithMatch | null> 
     .select()
     .from(parties)
     .innerJoin(matches, eq(parties.matchId, matches.id))
-    .where(and(eq(parties.slug, slug), eq(parties.isPublished, true)))
+    .where(and(eq(parties.slug, slug), eq(parties.status, 'published')))
     .limit(1);
   if (rows.length === 0) return null;
   return { ...rows[0].parties, match: rows[0].matches };
@@ -55,6 +55,6 @@ export async function partiesForMatch(matchId: string): Promise<PartyWithMatch[]
     .select()
     .from(parties)
     .innerJoin(matches, eq(parties.matchId, matches.id))
-    .where(and(eq(parties.matchId, matchId), eq(parties.isPublished, true)));
+    .where(and(eq(parties.matchId, matchId), eq(parties.status, 'published')));
   return rows.map((r) => ({ ...r.parties, match: r.matches }));
 }

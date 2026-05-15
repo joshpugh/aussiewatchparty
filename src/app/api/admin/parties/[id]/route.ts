@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { parties } from '@/lib/db/schema';
+import { parties, matches, PARTY_STATUSES } from '@/lib/db/schema';
 import { isAuthed } from '@/lib/auth/admin';
 import { geocodeAddress } from '@/lib/geo/geocode';
+import { sendSubmissionApproved, sendSubmissionRejected } from '@/lib/email/send';
 
 const PatchSchema = z.object({
   matchId: z.string().min(1).optional(),
@@ -18,7 +19,11 @@ const PatchSchema = z.object({
   capacity: z.number().int().positive().nullable().optional(),
   contactEmail: z.string().email().nullable().optional(),
   websiteUrl: z.string().url().nullable().optional(),
-  isPublished: z.boolean().optional(),
+  hostName: z.string().max(200).nullable().optional(),
+  hostEmail: z.string().email().nullable().optional(),
+  hostPhone: z.string().max(40).nullable().optional(),
+  status: z.enum(PARTY_STATUSES).optional(),
+  rejectionReason: z.string().max(500).optional(),
   lat: z.number().optional(),
   lng: z.number().optional(),
   regeocode: z.boolean().optional(),
@@ -43,6 +48,7 @@ export async function PATCH(
   const current = await db.select().from(parties).where(eq(parties.id, id)).limit(1);
   if (current.length === 0) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   const existing = current[0];
+  const oldStatus = existing.status;
 
   const update: Partial<typeof parties.$inferInsert> = { updatedAt: new Date() };
   if (v.matchId !== undefined) update.matchId = v.matchId;
@@ -56,12 +62,14 @@ export async function PATCH(
   if (v.capacity !== undefined) update.capacity = v.capacity;
   if (v.contactEmail !== undefined) update.contactEmail = v.contactEmail;
   if (v.websiteUrl !== undefined) update.websiteUrl = v.websiteUrl;
-  if (v.isPublished !== undefined) update.isPublished = v.isPublished;
-
+  if (v.hostName !== undefined) update.hostName = v.hostName;
+  if (v.hostEmail !== undefined) update.hostEmail = v.hostEmail;
+  if (v.hostPhone !== undefined) update.hostPhone = v.hostPhone;
+  if (v.status !== undefined) update.status = v.status;
   if (v.lat !== undefined) update.lat = v.lat;
   if (v.lng !== undefined) update.lng = v.lng;
 
-  if (v.regeocode || (v.addressLine || v.city || v.state || v.zip)) {
+  if (v.regeocode || v.addressLine || v.city || v.state || v.zip) {
     const next = {
       addressLine: update.addressLine ?? existing.addressLine,
       city: update.city ?? existing.city,
@@ -80,6 +88,31 @@ export async function PATCH(
   }
 
   await db.update(parties).set(update).where(eq(parties.id, id));
+
+  // If admin transitioned a public submission's status, notify the host.
+  const newStatus = update.status ?? oldStatus;
+  if (existing.submittedBy === 'public' && existing.hostEmail && newStatus !== oldStatus) {
+    try {
+      const updatedPartyRow = await db
+        .select()
+        .from(parties)
+        .innerJoin(matches, eq(parties.matchId, matches.id))
+        .where(eq(parties.id, id))
+        .limit(1);
+      const merged = updatedPartyRow[0];
+      if (merged) {
+        const partyForEmail = { ...merged.parties, match: merged.matches };
+        if (newStatus === 'published' && oldStatus === 'pending') {
+          await sendSubmissionApproved(partyForEmail);
+        } else if (newStatus === 'rejected' && oldStatus === 'pending') {
+          await sendSubmissionRejected(partyForEmail, v.rejectionReason);
+        }
+      }
+    } catch (err) {
+      console.error('Status-transition email failed', err);
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }
 

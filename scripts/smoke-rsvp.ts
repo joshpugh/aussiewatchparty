@@ -57,7 +57,8 @@ async function main() {
       capacity: null,
       contactEmail: null,
       websiteUrl: null,
-      isPublished: true,
+      status: 'published',
+      submittedBy: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
     });

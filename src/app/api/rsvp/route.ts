@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { randomBytes } from 'node:crypto';
 import { db } from '@/lib/db';
 import { parties, matches, rsvps } from '@/lib/db/schema';
-import { sendConfirmation } from '@/lib/email/send';
+import { sendConfirmation, sendRsvpHostNotification } from '@/lib/email/send';
 
 const Schema = z.object({
   partyId: z.string().min(1).max(64),
@@ -54,17 +54,26 @@ export async function POST(req: Request) {
 
   await db.insert(rsvps).values(rsvp);
 
-  // Best-effort email; don't fail the request if email is down.
-  try {
-    if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
+  // Best-effort emails; don't fail the request if email is down.
+  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
+    try {
       await sendConfirmation({ ...rsvp }, party, match);
       await db
         .update(rsvps)
         .set({ confirmationSentAt: new Date() })
         .where(eq(rsvps.id, id));
+    } catch (err) {
+      console.error('Confirmation email failed', err);
     }
-  } catch (err) {
-    console.error('Confirmation email failed', err);
+
+    // Notify the venue host (separate try/catch so one failure doesn't block the other).
+    if (party.hostEmail) {
+      try {
+        await sendRsvpHostNotification({ ...rsvp }, party, match);
+      } catch (err) {
+        console.error('Host RSVP notification failed', err);
+      }
+    }
   }
 
   return NextResponse.json({ ok: true });

@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import type { Match, Party } from '@/lib/db/schema';
+import type { Match, Party, PartyStatus } from '@/lib/db/schema';
 
 type Props = {
   matches: Match[];
@@ -14,10 +14,12 @@ const input =
 export function PartyForm({ matches, party }: Props) {
   const router = useRouter();
   const isEdit = !!party;
+  const isPublicSubmission = party?.submittedBy === 'public';
   const [logoUrl, setLogoUrl] = useState<string | null>(party?.venueLogoUrl ?? null);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   async function uploadLogo(file: File) {
     setUploading(true);
@@ -35,11 +37,29 @@ export function PartyForm({ matches, party }: Props) {
     setLogoUrl(data.url);
   }
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function submit(payload: Record<string, unknown>) {
     setSaving(true);
     setError(null);
-    const fd = new FormData(e.currentTarget);
+    const url = isEdit ? `/api/admin/parties/${party!.id}` : `/api/admin/parties`;
+    const method = isEdit ? 'PATCH' : 'POST';
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? 'Save failed.');
+      return false;
+    }
+    router.push('/admin/parties');
+    router.refresh();
+    return true;
+  }
+
+  function gatherForm(form: HTMLFormElement): Record<string, unknown> {
+    const fd = new FormData(form);
     const payload: Record<string, unknown> = {
       matchId: String(fd.get('matchId')),
       venueName: String(fd.get('venueName')).trim(),
@@ -52,7 +72,10 @@ export function PartyForm({ matches, party }: Props) {
       capacity: fd.get('capacity') ? Number(fd.get('capacity')) : null,
       contactEmail: String(fd.get('contactEmail') ?? '').trim() || null,
       websiteUrl: String(fd.get('websiteUrl') ?? '').trim() || null,
-      isPublished: fd.get('isPublished') === 'on',
+      hostName: String(fd.get('hostName') ?? '').trim() || null,
+      hostEmail: String(fd.get('hostEmail') ?? '').trim() || null,
+      hostPhone: String(fd.get('hostPhone') ?? '').trim() || null,
+      status: String(fd.get('status') ?? 'published') as PartyStatus,
     };
     const latStr = String(fd.get('lat') ?? '').trim();
     const lngStr = String(fd.get('lng') ?? '').trim();
@@ -61,28 +84,28 @@ export function PartyForm({ matches, party }: Props) {
       payload.lng = Number(lngStr);
     }
     if (isEdit) payload.regeocode = !latStr && !lngStr;
+    return payload;
+  }
 
-    const url = isEdit ? `/api/admin/parties/${party!.id}` : `/api/admin/parties`;
-    const method = isEdit ? 'PATCH' : 'POST';
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? 'Save failed.');
-      return;
-    }
-    router.push('/admin/parties');
-    router.refresh();
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    await submit(gatherForm(e.currentTarget));
+  }
+
+  async function quickApprove() {
+    if (!party) return;
+    await submit({ status: 'published' });
+  }
+
+  async function quickReject() {
+    if (!party) return;
+    if (!confirm('Reject this submission? The host will be emailed.')) return;
+    await submit({ status: 'rejected', rejectionReason: rejectionReason.trim() || undefined });
   }
 
   async function onDelete() {
     if (!party) return;
     if (!confirm(`Delete "${party.venueName}"? This also removes its RSVPs.`)) return;
-    // (keeps the venue name in the confirm so it reads naturally — no "watch party" prefix needed)
     await fetch(`/api/admin/parties/${party.id}`, { method: 'DELETE' });
     router.push('/admin/parties');
     router.refresh();
@@ -90,6 +113,47 @@ export function PartyForm({ matches, party }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
+      {/* Submission banner */}
+      {isPublicSubmission && party?.status === 'pending' && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm">
+          <p className="font-semibold text-amber-900">Public submission · awaiting review</p>
+          <p className="mt-1 text-amber-800">
+            Submitted by <strong>{party.hostName ?? 'Unknown'}</strong>
+            {party.hostEmail && (
+              <>
+                {' '}(<a className="underline" href={`mailto:${party.hostEmail}`}>{party.hostEmail}</a>)
+              </>
+            )}
+            {party.hostPhone && <> · {party.hostPhone}</>}
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={quickApprove}
+              disabled={saving}
+              className="rounded-lg bg-aus-green text-aus-gold font-display uppercase px-4 py-2 hover:bg-aus-green-700 disabled:opacity-60"
+            >
+              Approve
+            </button>
+            <button
+              type="button"
+              onClick={quickReject}
+              disabled={saving}
+              className="rounded-lg bg-white text-red-700 border border-red-300 font-display uppercase px-4 py-2 hover:bg-red-50 disabled:opacity-60"
+            >
+              Reject
+            </button>
+            <input
+              type="text"
+              placeholder="Optional reason for rejection (emailed to host)"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="flex-1 min-w-[200px] rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block sm:col-span-2">
           <span className="text-xs font-semibold uppercase text-neutral-600">Match</span>
@@ -208,12 +272,13 @@ export function PartyForm({ matches, party }: Props) {
           />
         </label>
         <label className="block">
-          <span className="text-xs font-semibold uppercase text-neutral-600">Contact email</span>
+          <span className="text-xs font-semibold uppercase text-neutral-600">Public contact email</span>
           <input
             name="contactEmail"
             type="email"
             defaultValue={party?.contactEmail ?? ''}
             className={`mt-1 ${input}`}
+            placeholder="Shown to attendees (optional)"
           />
         </label>
         <label className="block sm:col-span-2">
@@ -237,15 +302,53 @@ export function PartyForm({ matches, party }: Props) {
           />
         </label>
 
-        <label className="flex items-center gap-2 sm:col-span-2">
+        {/* Private host fields */}
+        <div className="sm:col-span-2 pt-2 border-t border-neutral-200">
+          <p className="text-xs font-semibold uppercase text-neutral-500">Private host contact (not shown publicly)</p>
+        </div>
+        <label className="block">
+          <span className="text-xs font-semibold uppercase text-neutral-600">Host name</span>
           <input
-            type="checkbox"
-            name="isPublished"
-            defaultChecked={party?.isPublished ?? true}
-            className="h-4 w-4 accent-aus-green"
+            name="hostName"
+            maxLength={200}
+            defaultValue={party?.hostName ?? ''}
+            className={`mt-1 ${input}`}
           />
-          <span className="text-sm">Show this party on the public site</span>
         </label>
+        <label className="block">
+          <span className="text-xs font-semibold uppercase text-neutral-600">Host email (for RSVP alerts)</span>
+          <input
+            name="hostEmail"
+            type="email"
+            defaultValue={party?.hostEmail ?? ''}
+            className={`mt-1 ${input}`}
+          />
+        </label>
+        <label className="block sm:col-span-2">
+          <span className="text-xs font-semibold uppercase text-neutral-600">Host phone (optional)</span>
+          <input
+            name="hostPhone"
+            maxLength={40}
+            defaultValue={party?.hostPhone ?? ''}
+            className={`mt-1 ${input}`}
+          />
+        </label>
+
+        {/* Status */}
+        <div className="sm:col-span-2 pt-2 border-t border-neutral-200">
+          <label className="block">
+            <span className="text-xs font-semibold uppercase text-neutral-600">Status</span>
+            <select
+              name="status"
+              defaultValue={party?.status ?? 'published'}
+              className={`mt-1 ${input}`}
+            >
+              <option value="pending">Pending — not shown publicly</option>
+              <option value="published">Live — shown on the site</option>
+              <option value="rejected">Rejected — hidden</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-700">{error}</p>}
@@ -258,7 +361,7 @@ export function PartyForm({ matches, party }: Props) {
               onClick={onDelete}
               className="text-sm text-red-600 hover:underline"
             >
-              Delete party
+              Delete watch party
             </button>
           )}
         </div>
@@ -267,7 +370,7 @@ export function PartyForm({ matches, party }: Props) {
           disabled={saving || uploading}
           className="rounded-lg bg-aus-green text-aus-gold font-display uppercase px-6 py-3 hover:bg-aus-green-700 disabled:opacity-60"
         >
-          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create party'}
+          {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create watch party'}
         </button>
       </div>
     </form>

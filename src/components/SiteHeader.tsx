@@ -10,12 +10,18 @@ export function SiteHeader() {
         >
           Aussie<span className="text-white"> </span>Watch<span className="text-white"> </span>Party
         </Link>
-        <nav className="text-sm font-semibold flex items-center gap-4">
-          <Link href="/#parties" className="hover:underline">
+        <nav className="text-sm font-semibold flex items-center gap-3 sm:gap-4">
+          <Link href="/#parties" className="hover:underline hidden sm:inline">
             Find a watch party
           </Link>
           <Link href="/#matches" className="hover:underline hidden sm:inline">
             Matches
+          </Link>
+          <Link
+            href="/submit"
+            className="rounded-full bg-aus-gold text-aus-ink px-3 py-1.5 hover:bg-aus-gold-200 transition"
+          >
+            List your venue
           </Link>
         </nav>
       </div>
