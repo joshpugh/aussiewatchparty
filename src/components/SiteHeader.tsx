@@ -20,10 +20,9 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/submit"
-            className="hover:underline text-aus-gold-200 hover:text-aus-gold whitespace-nowrap"
+            className="hidden sm:inline hover:underline text-aus-gold-200 hover:text-aus-gold whitespace-nowrap"
           >
-            <span className="hidden sm:inline">List your venue</span>
-            <span className="sm:hidden">List venue</span>
+            List your venue
           </Link>
           <Link
             href="/#parties"

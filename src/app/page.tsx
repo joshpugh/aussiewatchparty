@@ -150,6 +150,30 @@ export default async function Home({
           </ul>
         </div>
       </section>
+
+      {/* HOST CTA — primary access to /submit on mobile, secondary on desktop */}
+      <section className="aus-stripes text-aus-gold">
+        <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16 text-center">
+          <p className="font-display uppercase tracking-widest text-xs sm:text-sm text-aus-gold-200">
+            Pubs, clubs, sports bars
+          </p>
+          <h2 className="mt-3 font-display text-3xl sm:text-5xl uppercase text-white leading-[1]">
+            Hosting a Socceroos watch party?
+          </h2>
+          <p className="mt-4 max-w-xl mx-auto text-aus-gold-200 leading-relaxed text-sm sm:text-base">
+            List your venue and we&apos;ll put it in front of Aussie fans across America.
+            Free, takes about two minutes, and you get an email every time someone RSVPs.
+          </p>
+          <div className="mt-7">
+            <Link
+              href="/submit"
+              className="inline-block rounded-full bg-aus-gold text-aus-ink font-display uppercase px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base hover:bg-aus-gold-200 transition shadow-lg"
+            >
+              List your venue →
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
