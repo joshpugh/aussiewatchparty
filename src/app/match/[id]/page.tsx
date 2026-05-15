@@ -8,17 +8,7 @@ import { PartyCard } from '@/components/PartyCard';
 import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
 import { PartiesMap, type MapOrigin, type MapParty } from '@/components/PartiesMap';
-
-function formatKickoff(d: Date) {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  }).format(d);
-}
+import { KickoffTime } from '@/components/KickoffTime';
 
 function toMapParty(p: PartyWithMatch | PartyWithDistance): MapParty {
   return {
@@ -89,7 +79,7 @@ export default async function MatchPage({
             AUS vs {match.opponent}
           </h1>
           <p className="mt-3 text-aus-gold-200">
-            {formatKickoff(match.kickoffUtc)}
+            <KickoffTime iso={match.kickoffUtc.toISOString()} />
             {match.isTbd && ' · TBC'}
             {match.venueCity && ` · ${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`}
           </p>

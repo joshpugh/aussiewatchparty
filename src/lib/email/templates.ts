@@ -4,6 +4,11 @@ function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 }
 
+/**
+ * We don't know the recipient's timezone at send time, so emails format
+ * kickoffs in Eastern Time (the most commonly-relevant US timezone for our
+ * audience). The site itself shows the visitor's local timezone.
+ */
 function formatKickoff(d: Date) {
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
@@ -12,6 +17,7 @@ function formatKickoff(d: Date) {
     hour: 'numeric',
     minute: '2-digit',
     timeZoneName: 'short',
+    timeZone: 'America/New_York',
   }).format(d);
 }
 

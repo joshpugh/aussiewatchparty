@@ -3,16 +3,7 @@ import Link from 'next/link';
 import { partyBySlug } from '@/lib/parties';
 import { RsvpForm } from '@/components/RsvpForm';
 
-function formatKickoff(d: Date) {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  }).format(d);
-}
+import { KickoffTime } from '@/components/KickoffTime';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +80,7 @@ export default async function PartyDetailPage({
           AUS vs {p.match.opponent}
         </p>
         <p className="mt-1 text-aus-gold-200">
-          {formatKickoff(p.match.kickoffUtc)}
+          <KickoffTime iso={p.match.kickoffUtc.toISOString()} />
           {p.match.isTbd && ' · time TBC'}
           {p.match.venueCity && ` · ${p.match.venueCity}`}
         </p>

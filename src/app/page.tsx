@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
 import { HomeBoard } from '@/components/HomeBoard';
+import { KickoffTime } from '@/components/KickoffTime';
 import { type MapOrigin } from '@/components/PartiesMap';
 import { listMatches, nextMatch } from '@/lib/matches';
 import { lookupZip } from '@/lib/geo/zip';
@@ -12,17 +13,6 @@ import {
   type PartyWithDistance,
   type PartyWithMatch,
 } from '@/lib/parties';
-
-function formatKickoff(d: Date) {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  }).format(d);
-}
 
 export const dynamic = 'force-dynamic';
 
@@ -99,7 +89,7 @@ export default async function Home({
                 AUS vs {next.opponent}
               </p>
               <p className="mt-1 text-sm text-aus-gold-200">
-                {formatKickoff(next.kickoffUtc)}
+                <KickoffTime iso={next.kickoffUtc.toISOString()} />
                 {next.isTbd && ' · time TBC'}
               </p>
               <div className="mt-5">
@@ -142,7 +132,7 @@ export default async function Home({
                       AUS vs {m.opponent}
                     </p>
                     <p className="text-xs sm:text-sm text-neutral-600">
-                      {formatKickoff(m.kickoffUtc)}
+                      <KickoffTime iso={m.kickoffUtc.toISOString()} />
                       {m.venueCity && ` · ${m.venueCity}`}
                       {m.isTbd && ' · TBC'}
                     </p>

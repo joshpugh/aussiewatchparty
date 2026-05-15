@@ -1,16 +1,6 @@
 import Link from 'next/link';
+import { KickoffTime } from '@/components/KickoffTime';
 import type { PartyWithDistance, PartyWithMatch } from '@/lib/parties';
-
-function formatKickoff(d: Date) {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZoneName: 'short',
-  }).format(d);
-}
 
 export function PartyCard({ p }: { p: PartyWithMatch | PartyWithDistance }) {
   const distance = 'distanceMi' in p ? p.distanceMi : null;
@@ -49,7 +39,7 @@ export function PartyCard({ p }: { p: PartyWithMatch | PartyWithDistance }) {
           <p className="mt-2 text-sm">
             <span className="text-neutral-500">vs </span>
             <span className="font-semibold text-aus-ink">{p.match.opponent}</span>
-            <span className="text-neutral-500"> · {formatKickoff(p.match.kickoffUtc)}</span>
+            <span className="text-neutral-500"> · <KickoffTime iso={p.match.kickoffUtc.toISOString()} variant="short" /></span>
           </p>
         </div>
       </div>
