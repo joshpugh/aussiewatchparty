@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
 import { PartyCard } from '@/components/PartyCard';
+import { PartiesMap, type MapParty } from '@/components/PartiesMap';
 import { listMatches, nextMatch } from '@/lib/matches';
 import { lookupZip } from '@/lib/geo/zip';
 import { listPublishedParties, partiesNear, type PartyWithMatch, type PartyWithDistance } from '@/lib/parties';
@@ -105,6 +106,23 @@ export default async function Home({
             </p>
           </div>
         </div>
+
+        {parties.length > 0 && (
+          <div className="mb-6">
+            <PartiesMap
+              parties={parties.map<MapParty>((p) => ({
+                slug: p.slug,
+                venueName: p.venueName,
+                city: p.city,
+                state: p.state,
+                lat: p.lat,
+                lng: p.lng,
+                matchOpponent: p.match.opponent,
+              }))}
+            />
+          </div>
+        )}
+
         <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
           {parties.map((p) => (
             <PartyCard key={p.id} p={p} />
