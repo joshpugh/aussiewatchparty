@@ -20,10 +20,9 @@ export type Partner = {
 export const PARTNERS: Partner[] = [
   {
     name: 'America Josh',
-    shortName: 'America Josh',
+    shortName: 'AJ',
     url: 'https://americajosh.com',
-    // Drop the real logo URL here. Leave undefined to render as a text tile.
-    // logoUrl: 'https://...',
+    logoUrl: '/partners/america-josh.svg',
   },
   // Add up to 3 more partners:
   // { name: 'Partner Two', url: 'https://example.com', logoUrl: 'https://...' },

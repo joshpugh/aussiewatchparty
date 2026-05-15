@@ -8,7 +8,12 @@ function PartnerTile({ partner }: { partner: Partner }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={partner.name}
-      className="group flex items-center justify-center h-12 sm:h-14 min-w-[120px] sm:min-w-[160px] rounded-lg bg-white border border-neutral-200 hover:border-aus-green/40 hover:shadow-sm transition px-4"
+      className={[
+        'group flex items-center justify-center h-12 sm:h-14 rounded-lg bg-white border border-neutral-200 hover:border-aus-green/40 hover:shadow-sm transition px-4',
+        // Text-only tiles need a minimum width so they don't shrink-wrap to
+        // a tiny pill. Logo tiles size to the image's natural aspect ratio.
+        partner.logoUrl ? '' : 'min-w-[120px] sm:min-w-[160px]',
+      ].join(' ')}
     >
       {partner.logoUrl ? (
         // Plain <img> so we don't need to register every partner domain with
@@ -18,7 +23,7 @@ function PartnerTile({ partner }: { partner: Partner }) {
         <img
           src={partner.logoUrl}
           alt={partner.name}
-          className="max-h-8 sm:max-h-10 w-auto object-contain"
+          className="h-7 sm:h-9 w-auto max-w-[180px] sm:max-w-[220px] object-contain"
         />
       ) : (
         <span className="font-display uppercase tracking-wide text-xs sm:text-sm text-aus-ink group-hover:text-aus-green transition">
