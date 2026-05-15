@@ -129,4 +129,4 @@ it. After editing, run `npm run db:seed` to upsert.
 
 ## License
 
-MIT. Unofficial fan project. Not affiliated with FFA or any governing body.
+MIT. Unofficial fan project. Not affiliated with Football Australia or any governing body.
