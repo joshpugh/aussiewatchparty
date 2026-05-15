@@ -34,11 +34,25 @@ function PartnerTile({ partner }: { partner: Partner }) {
   );
 }
 
-export function PoweredBy() {
+/**
+ * "Powered by" sponsor strip. Two presentations:
+ *
+ * - `variant="page"` (default): sits inline between page sections (used
+ *   on the homepage between the hero and the watch-party board). Has a
+ *   bottom border so it reads as a transition into the next section.
+ * - `variant="footer"`: rendered just above the site footer on every
+ *   page. Has a top border to separate it from page content.
+ */
+export function PoweredBy({ variant = 'page' }: { variant?: 'page' | 'footer' }) {
   if (PARTNERS.length === 0) return null;
 
+  const wrapperClass =
+    variant === 'footer'
+      ? 'border-t border-neutral-200 bg-aus-cream/40'
+      : 'border-b border-neutral-200 bg-aus-cream/40';
+
   return (
-    <section className="border-b border-neutral-200 bg-aus-cream/40">
+    <section className={wrapperClass}>
       <div className="mx-auto max-w-5xl px-4 py-5 sm:py-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
         <p className="text-xs font-display uppercase tracking-widest text-neutral-500 flex-shrink-0">
           Powered by

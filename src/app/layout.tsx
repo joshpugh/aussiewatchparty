@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
+import { PoweredBy } from '@/components/PoweredBy';
 
 const display = Archivo_Black({
   variable: '--font-display',
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col">
         <SiteHeader />
         <main className="flex-1">{children}</main>
+        <PoweredBy variant="footer" />
         <SiteFooter />
         <Analytics />
       </body>
