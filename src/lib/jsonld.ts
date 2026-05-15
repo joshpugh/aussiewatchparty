@@ -118,7 +118,9 @@ export function partyJsonLd(p: PartyWithMatch) {
       price: '0',
       priceCurrency: 'USD',
       availability: 'https://schema.org/InStock',
-      url,
+      // Point at the external booking platform when set, otherwise our
+      // own party page (which hosts the RSVP form).
+      url: p.rsvpUrl ?? url,
       validFrom: p.createdAt.toISOString(),
     },
     maximumAttendeeCapacity: p.capacity ?? undefined,

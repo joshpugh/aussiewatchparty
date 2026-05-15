@@ -54,6 +54,11 @@ export const parties = sqliteTable(
     contactEmail: text('contact_email'),
     websiteUrl: text('website_url'),
 
+    // If set, the party page shows a single "RSVP via {venue}" button
+    // linking out, instead of our in-site form. Use for venues running
+    // their own booking platform (Eventbrite, Tock, etc.).
+    rsvpUrl: text('rsvp_url'),
+
     // Private host contact (used to notify on RSVPs + for admin follow-up).
     // Required for public submissions; optional when admin creates a party.
     hostName: text('host_name'),

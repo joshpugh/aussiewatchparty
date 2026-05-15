@@ -121,12 +121,36 @@ export default async function PartyDetailPage({
 
       <section className="mt-10">
         <h2 className="font-display text-2xl uppercase">RSVP</h2>
-        <p className="text-sm text-neutral-600 mt-1">
-          Help the venue plan. You&apos;ll get a confirmation and a reminder ~24h before kickoff.
-        </p>
-        <div className="mt-4">
-          <RsvpForm partyId={p.id} />
-        </div>
+        {p.rsvpUrl ? (
+          // External RSVP — the venue runs its own booking platform.
+          <>
+            <p className="text-sm text-neutral-600 mt-1">
+              {p.venueName} handles RSVPs on their own site. You&apos;ll head there to grab a spot.
+            </p>
+            <div className="mt-4 rounded-2xl border border-aus-green/20 bg-aus-cream/40 p-5 sm:p-6">
+              <a
+                href={p.rsvpUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg bg-aus-green text-aus-gold font-display uppercase px-6 py-3 hover:bg-aus-green-700 transition"
+              >
+                RSVP at {p.venueName} →
+              </a>
+              <p className="mt-3 text-xs text-neutral-500 break-all">
+                Opens in a new tab · {p.rsvpUrl}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-neutral-600 mt-1">
+              Help the venue plan. You&apos;ll get a confirmation and a reminder ~24h before kickoff.
+            </p>
+            <div className="mt-4">
+              <RsvpForm partyId={p.id} />
+            </div>
+          </>
+        )}
       </section>
     </div>
   );

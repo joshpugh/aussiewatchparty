@@ -72,6 +72,7 @@ export function PartyForm({ matches, party }: Props) {
       capacity: fd.get('capacity') ? Number(fd.get('capacity')) : null,
       contactEmail: String(fd.get('contactEmail') ?? '').trim() || null,
       websiteUrl: String(fd.get('websiteUrl') ?? '').trim() || null,
+      rsvpUrl: String(fd.get('rsvpUrl') ?? '').trim() || null,
       hostName: String(fd.get('hostName') ?? '').trim() || null,
       hostEmail: String(fd.get('hostEmail') ?? '').trim() || null,
       hostPhone: String(fd.get('hostPhone') ?? '').trim() || null,
@@ -287,6 +288,21 @@ export function PartyForm({ matches, party }: Props) {
             name="websiteUrl"
             type="url"
             defaultValue={party?.websiteUrl ?? ''}
+            className={`mt-1 ${input}`}
+          />
+        </label>
+
+        <label className="block sm:col-span-2">
+          <span className="text-xs font-semibold uppercase text-neutral-600">External RSVP URL</span>
+          <p className="text-xs text-neutral-500 mt-0.5">
+            If set, the party page hides our RSVP form and shows a button linking here
+            (Eventbrite, OpenTable, the venue&apos;s own booking page, etc.).
+          </p>
+          <input
+            name="rsvpUrl"
+            type="url"
+            placeholder="https://eventbrite.com/..."
+            defaultValue={party?.rsvpUrl ?? ''}
             className={`mt-1 ${input}`}
           />
         </label>

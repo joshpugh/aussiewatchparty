@@ -95,6 +95,7 @@ export function SubmitForm({ matches }: { matches: Match[] }) {
       capacity: fd.get('capacity') ? Number(fd.get('capacity')) : null,
       contactEmail: String(fd.get('contactEmail') ?? '').trim() || null,
       websiteUrl: String(fd.get('websiteUrl') ?? '').trim() || null,
+      rsvpUrl: String(fd.get('rsvpUrl') ?? '').trim() || null,
       hostName: String(fd.get('hostName') ?? '').trim(),
       hostEmail: String(fd.get('hostEmail') ?? '').trim(),
       hostPhone: String(fd.get('hostPhone') ?? '').trim() || null,
@@ -235,6 +236,23 @@ export function SubmitForm({ matches }: { matches: Match[] }) {
             <span className="text-xs font-semibold uppercase text-neutral-600">Anything attendees should know?</span>
             <p className="text-xs text-neutral-500">Bookings, food specials, opening time, parking — keep it short.</p>
             <textarea name="hostNotes" maxLength={500} rows={3} className={`mt-1 ${input}`} />
+          </label>
+
+          <label className="block">
+            <span className="text-xs font-semibold uppercase text-neutral-600">
+              Already using your own booking platform?
+            </span>
+            <p className="text-xs text-neutral-500">
+              Paste your Eventbrite, OpenTable, Resy or other booking link and we&apos;ll point fans
+              straight there instead of running RSVPs ourselves. Leave blank to let us collect
+              RSVPs for you (you&apos;ll get an email for each one).
+            </p>
+            <input
+              name="rsvpUrl"
+              type="url"
+              placeholder="https://eventbrite.com/..."
+              className={`mt-1 ${input}`}
+            />
           </label>
         </fieldset>
 

@@ -19,6 +19,7 @@ const PatchSchema = z.object({
   capacity: z.number().int().positive().nullable().optional(),
   contactEmail: z.string().email().nullable().optional(),
   websiteUrl: z.string().url().nullable().optional(),
+  rsvpUrl: z.string().url().nullable().optional(),
   hostName: z.string().max(200).nullable().optional(),
   hostEmail: z.string().email().nullable().optional(),
   hostPhone: z.string().max(40).nullable().optional(),
@@ -62,6 +63,7 @@ export async function PATCH(
   if (v.capacity !== undefined) update.capacity = v.capacity;
   if (v.contactEmail !== undefined) update.contactEmail = v.contactEmail;
   if (v.websiteUrl !== undefined) update.websiteUrl = v.websiteUrl;
+  if (v.rsvpUrl !== undefined) update.rsvpUrl = v.rsvpUrl;
   if (v.hostName !== undefined) update.hostName = v.hostName;
   if (v.hostEmail !== undefined) update.hostEmail = v.hostEmail;
   if (v.hostPhone !== undefined) update.hostPhone = v.hostPhone;
