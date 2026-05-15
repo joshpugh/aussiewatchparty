@@ -44,8 +44,7 @@ export default async function MatchOgImage({
             color: COLORS.goldLight,
           }}
         >
-          {match.stage === 'group' ? 'Group D · 2026 Tournament' : 'Knockout · 2026 Tournament'}
-          {match.isTbd ? ' · TBC' : ''}
+          {`${match.stage === 'group' ? 'Group D · 2026 Tournament' : 'Knockout · 2026 Tournament'}${match.isTbd ? ' · TBC' : ''}`}
         </div>
 
         <div style={{ display: 'flex', flexGrow: 1, alignItems: 'center' }}>
@@ -99,8 +98,7 @@ export default async function MatchOgImage({
               <div style={{ display: 'flex', fontWeight: 600 }}>{formatKickoffET(match.kickoffUtc)}</div>
               {match.venueCity && (
                 <div style={{ display: 'flex', marginTop: 6, color: COLORS.goldLight }}>
-                  {match.venueCity}
-                  {match.venueCountry ? `, ${match.venueCountry}` : ''}
+                  {`${match.venueCity}${match.venueCountry ? `, ${match.venueCountry}` : ''}`}
                 </div>
               )}
             </div>

@@ -45,7 +45,7 @@ export default async function PartyOgImage({
             color: COLORS.goldLight,
           }}
         >
-          Watch Party · {p.city}, {p.state}
+          {`Watch Party · ${p.city}, ${p.state}`}
         </div>
 
         <div style={{ display: 'flex', flexGrow: 1, alignItems: 'center' }}>
@@ -74,7 +74,7 @@ export default async function PartyOgImage({
                 letterSpacing: -1,
               }}
             >
-              AUS vs {p.match.opponent}
+              {`AUS vs ${p.match.opponent}`}
             </div>
             <div
               style={{
