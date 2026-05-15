@@ -17,19 +17,43 @@ const sans = Inter({
   subsets: ['latin'],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'Aussie Watch Party USA',
     template: '%s — Aussie Watch Party USA',
   },
   description:
-    "Find a Socceroos watch party near you. Pubs, clubs and venues across the US tuning in for the matches.",
+    "Find a Socceroos watch party near you. Pubs, clubs and venues across America tuning in for the 2026 men's tournament.",
+  alternates: { canonical: '/' },
   openGraph: {
     title: 'Aussie Watch Party USA',
-    description: 'Find a Socceroos watch party near you.',
+    description:
+      "Find a Socceroos watch party near you. Pubs, clubs and venues across America tuning in for the 2026 men's tournament.",
     type: 'website',
+    url: SITE_URL,
+    siteName: 'Aussie Watch Party USA',
+    locale: 'en_US',
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Aussie Watch Party USA',
+    description: 'Find a Socceroos watch party near you. Pubs, clubs and venues across America.',
+  },
+  applicationName: 'Aussie Watch Party USA',
+  authors: [{ name: 'America Josh', url: 'https://americajosh.com' }],
+  keywords: [
+    'Socceroos',
+    'Australia',
+    'World Cup 2026',
+    'watch party',
+    'Aussie pub USA',
+    'Group D',
+    'soccer',
+    'football',
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { matchById } from '@/lib/matches';
 import { partiesForMatch, NEAR_RADIUS_MI, type PartyWithMatch, type PartyWithDistance } from '@/lib/parties';
 import { lookupZip } from '@/lib/geo/zip';
@@ -9,6 +10,38 @@ import { Countdown } from '@/components/Countdown';
 import { ZipSearch } from '@/components/ZipSearch';
 import { PartiesMap, type MapOrigin, type MapParty } from '@/components/PartiesMap';
 import { KickoffTime } from '@/components/KickoffTime';
+import { formatKickoffET } from '@/lib/og';
+import { matchJsonLd } from '@/lib/jsonld';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const match = await matchById(id);
+  if (!match) return {};
+  const title = `AUS vs ${match.opponent}`;
+  const venueBit = match.venueCity ? ` at ${match.venueCity}` : '';
+  const description = `Find a Socceroos watch party near you for AUS vs ${match.opponent}${venueBit}, ${formatKickoffET(match.kickoffUtc)}. Pubs, clubs and venues across America.`;
+  const canonical = `/match/${id}`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: `${title} — Aussie Watch Party USA`,
+      description,
+      type: 'website',
+      url: canonical,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} — Aussie Watch Party USA`,
+      description,
+    },
+  };
+}
 
 function toMapParty(p: PartyWithMatch | PartyWithDistance): MapParty {
   return {
@@ -67,6 +100,12 @@ export default async function MatchPage({
 
   return (
     <div>
+      {/* schema.org SportsEvent for rich results */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(matchJsonLd(match)) }}
+      />
       {/* HERO */}
       <section className="aus-stripes text-aus-gold">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">

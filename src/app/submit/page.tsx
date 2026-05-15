@@ -2,10 +2,26 @@ import Link from 'next/link';
 import { listMatches } from '@/lib/matches';
 import { SubmitForm } from '@/components/SubmitForm';
 
-export const metadata = {
-  title: 'Submit your watch party',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'List your venue',
   description:
-    'List your venue as an official Socceroos watch party for the 2026 tournament. Free, takes about 2 minutes.',
+    'Submit your pub, club or venue as a Socceroos watch party. Free, takes about 2 minutes. Email alerts whenever a fan RSVPs.',
+  alternates: { canonical: '/submit' },
+  openGraph: {
+    title: 'List your venue — Aussie Watch Party USA',
+    description:
+      'Submit your pub, club or venue as a Socceroos watch party. Free, takes about 2 minutes.',
+    type: 'website',
+    url: '/submit',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'List your venue — Aussie Watch Party USA',
+    description:
+      'Submit your pub, club or venue as a Socceroos watch party. Free, takes about 2 minutes.',
+  },
 };
 
 export const dynamic = 'force-dynamic';

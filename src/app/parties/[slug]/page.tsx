@@ -1,19 +1,40 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { partyBySlug } from '@/lib/parties';
 import { RsvpForm } from '@/components/RsvpForm';
-
 import { KickoffTime } from '@/components/KickoffTime';
+import { formatKickoffET } from '@/lib/og';
+import { partyJsonLd } from '@/lib/jsonld';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const p = await partyBySlug(slug);
   if (!p) return {};
+  const title = `${p.venueName} — AUS vs ${p.match.opponent}`;
+  const description = `Watch the Socceroos take on ${p.match.opponent} at ${p.venueName} in ${p.city}, ${p.state}. ${formatKickoffET(p.match.kickoffUtc)}. RSVP free.`;
+  const canonical = `/parties/${slug}`;
   return {
-    title: `${p.venueName} — AUS vs ${p.match.opponent}`,
-    description: `Watch the Socceroos take on ${p.match.opponent} at ${p.venueName} in ${p.city}, ${p.state}.`,
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      title: `${p.venueName} — Aussie Watch Party USA`,
+      description,
+      type: 'website',
+      url: canonical,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${p.venueName} — Aussie Watch Party USA`,
+      description,
+    },
   };
 }
 
@@ -32,6 +53,12 @@ export default async function PartyDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+      {/* schema.org Event for rich results */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(partyJsonLd(p)) }}
+      />
       <p className="text-sm">
         <Link href="/" className="text-aus-green hover:underline">
           ← All watch parties
